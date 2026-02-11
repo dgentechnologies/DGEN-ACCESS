@@ -563,12 +563,12 @@
             </div>
             <div class="nav-info">
                 <div class="info-item">
-                    🕐
+                    <span aria-hidden="true">🕐</span>
                     <span id="currentTime">--:--:--</span>
                 </div>
                 <div class="info-item">
-                    👥
-                    <span id="userCount">0 Employees</span>
+                    <span aria-hidden="true">👥</span>
+                    <span id="userCount" aria-live="polite">0 Employees</span>
                 </div>
             </div>
         </div>
@@ -592,7 +592,7 @@
                 <!-- Add Employee Card -->
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-icon">
+                        <div class="card-icon" aria-hidden="true">
                             👤➕
                         </div>
                         <h3 class="card-title">Add New Employee</h3>
@@ -736,7 +736,15 @@
             alert.setAttribute('role', 'alert');
             
             const icon = type === 'success' ? '✓' : '✗';
-            alert.innerHTML = `<span aria-hidden="true">${icon}</span> ${message}`;
+            const iconSpan = document.createElement('span');
+            iconSpan.setAttribute('aria-hidden', 'true');
+            iconSpan.textContent = icon + ' ';
+            
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = message;
+            
+            alert.appendChild(iconSpan);
+            alert.appendChild(messageSpan);
             alert.style.display = 'block';
             alertContainer.appendChild(alert);
 
@@ -917,7 +925,7 @@
                 logs.forEach(log => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>🕐 ${escapeHtml(log.time)}</td>
+                        <td><span aria-hidden="true">🕐</span> ${escapeHtml(log.time)}</td>
                         <td>${escapeHtml(log.name)}</td>
                         <td>${escapeHtml(log.id)}</td>
                         <td>
