@@ -2,6 +2,8 @@
 
 > 🚀 **Version 3.0 - Next.js Edition** Built with React, Next.js, TailwindCSS, and Firebase
 
+**⚡ [Quick Start Guide](QUICKSTART.md)** | **📖 [Detailed Setup](SETUP.md)**
+
 A complete, modern Access Control Server for IoT projects with ESP32 integration, built with Next.js and designed for Vercel deployment.
 
 ## 🚀 Features
