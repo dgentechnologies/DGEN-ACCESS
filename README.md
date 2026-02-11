@@ -2,7 +2,11 @@
 
 > 🚀 **Version 3.0 - Next.js Edition** Built with React, Next.js, TailwindCSS, and Firebase
 
-**⚡ [Quick Start Guide](QUICKSTART.md)** | **📖 [Detailed Setup](SETUP.md)**
+**📚 Documentation:**
+- ⚡ [Quick Start](QUICKSTART.md) - Get running in 5 minutes
+- 📖 [Setup Guide](SETUP.md) - Detailed setup instructions
+- 🚀 [Deployment Guide](DEPLOYMENT.md) - Deploy to production
+- 🔧 [Troubleshooting](TROUBLESHOOTING.md) - Common issues & solutions
 
 A complete, modern Access Control Server for IoT projects with ESP32 integration, built with Next.js and designed for Vercel deployment.
 
@@ -188,10 +192,17 @@ void checkAccess(String rfidData) {
 - Frontend Firebase config is client-safe (no private keys)
 - Consider adding authentication for admin dashboard in production
 
+## 🐛 Troubleshooting
+
+Having issues? Check the [Troubleshooting Guide](TROUBLESHOOTING.md) for common problems and solutions.
+
 ## 📄 License
 
 This project is provided as-is for DGEN Technologies.
 
 ## 🤝 Support
 
-For issues or questions, please open an issue on GitHub or contact the development team.
+For issues or questions:
+- 📖 Read the [Troubleshooting Guide](TROUBLESHOOTING.md)
+- 💬 Open an issue on [GitHub](https://github.com/MrTG1B/DGEN-ACESS/issues)
+- 📧 Contact the development team
