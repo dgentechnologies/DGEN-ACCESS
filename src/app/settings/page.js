@@ -33,16 +33,10 @@ export default function Settings() {
                 {process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'Not configured'}
               </span>
             </div>
-            <div className="flex items-center justify-between py-2 border-b border-gray-700">
+            <div className="flex items-center justify-between py-2">
               <span className="text-gray-400">Auth Domain</span>
               <span className="text-white font-mono text-sm">
                 {process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'Not configured'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <span className="text-gray-400">Database URL</span>
-              <span className="text-white font-mono text-sm">
-                {process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || 'Not configured'}
               </span>
             </div>
           </div>
@@ -75,11 +69,7 @@ export default function Settings() {
           <div className="space-y-3 text-gray-300">
             <p>
               <strong className="text-white">Firestore Rules:</strong> Located in{' '}
-              <code className="text-purple-400">.firebase/firestore.rules</code>
-            </p>
-            <p>
-              <strong className="text-white">Realtime DB Rules:</strong> Located in{' '}
-              <code className="text-purple-400">.firebase/database.rules.json</code>
+              <code className="text-purple-400">firestore.rules</code>
             </p>
             <p>
               <strong className="text-white">Environment Variables:</strong> Check{' '}
@@ -99,7 +89,7 @@ export default function Settings() {
             <p>2. Set up environment variables:</p>
             <p className="pl-4">- Copy .env.example to .env.local</p>
             <p className="pl-4">- Add your Firebase Admin credentials</p>
-            <p>3. Deploy Firebase rules using: <code className="bg-white/10 px-2 py-1 rounded">firebase deploy --only firestore:rules,database</code></p>
+            <p>3. Deploy Firestore rules using: <code className="bg-white/10 px-2 py-1 rounded">firebase deploy --only firestore:rules</code></p>
             <p>4. Install dependencies and start the Next.js server:</p>
             <p className="pl-4"><code className="bg-white/10 px-2 py-1 rounded">npm install && npm run dev</code></p>
             <p>5. Build for production:</p>
