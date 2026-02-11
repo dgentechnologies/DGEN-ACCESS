@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { logService } from '@/services/dataService';
-import { realtimeDb } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
+import { firestoreDb } from '@/lib/firebase';
+import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import {
@@ -14,50 +14,63 @@ import {
 } from '@heroicons/react/24/outline';
 import LayoutWrapper from '@/components/LayoutWrapper';
 
+const MAX_LOGS = 100;
+
 export default function Logs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [realtimeEnabled, setRealtimeEnabled] = useState(false);
 
   useEffect(() => {
-    fetchLogs();
-    setupRealtimeListener();
+    const unsubscribe = setupRealtimeListener();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
+
+  const setupRealtimeListener = () => {
+    try {
+      const logsRef = collection(firestoreDb, 'logs');
+      const q = query(logsRef, orderBy('timestamp', 'desc'), limit(MAX_LOGS));
+      
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const logsArray = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setLogs(logsArray);
+        setRealtimeEnabled(true);
+        setLoading(false);
+      }, (error) => {
+        console.error('Realtime listener error:', error);
+        setRealtimeEnabled(false);
+        setLoading(false);
+        // Fallback to API fetch
+        fetchLogs();
+      });
+
+      return unsubscribe;
+    } catch (error) {
+      console.error('Error setting up realtime listener:', error);
+      setRealtimeEnabled(false);
+      setLoading(false);
+      // Fallback to API fetch
+      fetchLogs();
+      return null;
+    }
+  };
 
   const fetchLogs = async () => {
     try {
-      const response = await logService.getAll(100);
+      const response = await logService.getAll(MAX_LOGS);
       if (response.success) {
         setLogs(response.data);
       }
     } catch (error) {
       console.error('Error fetching logs:', error);
       toast.error('Failed to load logs');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const setupRealtimeListener = () => {
-    try {
-      const logsRef = ref(realtimeDb, 'logs');
-      const unsubscribe = onValue(logsRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const logsArray = Object.keys(data).map((key) => ({
-            id: key,
-            ...data[key],
-          }));
-          logsArray.sort((a, b) => b.timestamp - a.timestamp);
-          setLogs(logsArray);
-          setRealtimeEnabled(true);
-        }
-      });
-
-      return () => unsubscribe();
-    } catch (error) {
-      console.error('Realtime listener error:', error);
-      setRealtimeEnabled(false);
     }
   };
 

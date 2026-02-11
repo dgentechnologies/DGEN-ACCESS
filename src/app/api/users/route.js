@@ -52,7 +52,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { id, name, role } = body;
+    const { id, name, role, department } = body;
 
     // Validation
     if (!id || !name || !role) {
@@ -85,6 +85,11 @@ export async function POST(request) {
       isSuperAdmin: false,
       createdAt: new Date().toISOString()
     };
+
+    // Add department if provided
+    if (department) {
+      newUser.department = department;
+    }
 
     await db.collection('users').doc(id).set(newUser);
 
