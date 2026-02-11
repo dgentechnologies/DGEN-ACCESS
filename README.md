@@ -7,6 +7,7 @@
 - 📖 [Setup Guide](SETUP.md) - Detailed setup instructions
 - 🚀 [Deployment Guide](DEPLOYMENT.md) - Deploy to production
 - 🔧 [Troubleshooting](TROUBLESHOOTING.md) - Common issues & solutions
+- 📝 [Changelog](CHANGELOG.md) - What's new
 
 A complete, modern Access Control Server for IoT projects with ESP32 integration, built with Next.js and designed for Vercel deployment.
 
