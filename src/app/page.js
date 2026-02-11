@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { userService } from '@/services/dataService';
+import { firestoreDb } from '@/lib/firebase';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import {
@@ -20,10 +22,49 @@ export default function Home() {
     superAdmins: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [realtimeEnabled, setRealtimeEnabled] = useState(false);
 
   useEffect(() => {
-    fetchStats();
+    setupRealtimeListener();
   }, []);
+
+  const setupRealtimeListener = () => {
+    try {
+      const usersRef = collection(firestoreDb, 'users');
+      const q = query(usersRef, orderBy('createdAt', 'desc'));
+      
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const users = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        
+        setStats({
+          totalUsers: users.length,
+          activeUsers: users.filter(u => u.status === 'Active').length,
+          bannedUsers: users.filter(u => u.status === 'Banned').length,
+          superAdmins: users.filter(u => u.isSuperAdmin).length,
+        });
+        
+        setRealtimeEnabled(true);
+        setLoading(false);
+      }, (error) => {
+        console.error('Realtime listener error:', error);
+        setRealtimeEnabled(false);
+        setLoading(false);
+        // Fallback to API fetch
+        fetchStats();
+      });
+
+      return () => unsubscribe();
+    } catch (error) {
+      console.error('Error setting up realtime listener:', error);
+      setRealtimeEnabled(false);
+      setLoading(false);
+      // Fallback to API fetch
+      fetchStats();
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -40,8 +81,6 @@ export default function Home() {
     } catch (error) {
       console.error('Error fetching stats:', error);
       toast.error('Failed to load dashboard statistics');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -91,8 +130,18 @@ export default function Home() {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-          <p className="text-gray-400">Welcome to DGEN Access Control System</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+              <p className="text-gray-400">Welcome to DGEN Access Control System</p>
+            </div>
+            {realtimeEnabled && (
+              <div className="flex items-center text-green-500">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                Live Data
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -130,7 +179,7 @@ export default function Home() {
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Firebase Connection</span>
+              <span className="text-gray-400">Firestore Connection</span>
               <span className="flex items-center text-green-500">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                 Connected
