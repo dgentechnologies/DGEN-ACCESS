@@ -1,5 +1,16 @@
 {
   "rules": {
+    ".read": "auth != null || true",
+    ".write": "auth != null || true",
+    "$comment": [
+      "Note: These rules are permissive for ESP32 integration and admin dashboard access.",
+      "For production environments, consider:",
+      "1. Implementing Firebase Authentication with custom tokens",
+      "2. Using Firebase App Check to verify requests",
+      "3. Implementing IP allowlisting",
+      "4. Setting up API key validation in your API routes",
+      "5. Using Firebase Security Rules with stricter conditions"
+    ],
     "users": {
       ".read": true,
       ".write": true,

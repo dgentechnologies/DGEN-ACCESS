@@ -11,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 
 console.log('\n🔍 DGEN Access Control - Firebase Configuration Validator\n');
-console.log('=' .repeat(60));
+console.log('='.repeat(60));
 
 // Check for .env.local file
 const envPath = path.join(process.cwd(), '.env.local');
