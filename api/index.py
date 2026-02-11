@@ -89,15 +89,19 @@ def log_access(user_data, status):
 def verify():
     """
     ESP32 API Endpoint - Verifies RFID data
-    Input: {"data": "DGEN-EX-01"} or {"data": "Tirthankar Dasgupta"}
+    Accepts both Form Data (primary) and JSON (fallback)
+    Input: Form data with 'data' field OR {"data": "DGEN-EX-01"}
     Output: "YES" or "NO"
     """
     try:
-        json_data = request.json
-        if not json_data:
-            return "NO", 200
+        # Primary: Try to get form data (for ESP32 HTTPClient)
+        data = request.form.get('data', '').strip()
         
-        data = json_data.get('data', '').strip()
+        # Fallback: Try JSON if form data is empty (backward compatibility)
+        if not data:
+            json_data = request.get_json(silent=True)
+            if json_data:
+                data = json_data.get('data', '').strip()
         
         if not data:
             return "NO", 200
