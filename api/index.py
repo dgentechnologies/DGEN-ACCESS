@@ -230,6 +230,7 @@ def get_logs():
 # For Vercel serverless function
 app_handler = app
 
-# For local testing
+# For local testing only - Debug mode should never be used in production
+# When deployed to Vercel, this block is not executed
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
