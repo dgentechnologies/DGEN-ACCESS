@@ -176,6 +176,7 @@ export default function Employees() {
         id: formData.id,
         name: formData.name,
         role: formData.role,
+        department: formData.department,
       });
       if (response.success) {
         toast.success('Employee added successfully');
@@ -434,7 +435,7 @@ export default function Employees() {
                       value={formData.id}
                       onChange={(e) => setFormData({ ...formData, id: e.target.value })}
                       className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white font-mono focus:border-purple-500 focus:outline-none"
-                      placeholder="Select department first"
+                      placeholder="Select Department First"
                       disabled={!formData.department}
                     />
                     <p className="mt-1 text-xs text-gray-500">
