@@ -359,6 +359,17 @@
     </div>
 
     <script>
+        // HTML escape function to prevent XSS
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return unsafe;
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         // Alert functions
         function showAlert(message, type) {
             const alertContainer = document.getElementById('alertContainer');
@@ -388,11 +399,11 @@
                     
                     row.innerHTML = `
                         <td>
-                            ${user.name}
+                            ${escapeHtml(user.name)}
                             ${isSuperAdmin ? '<span class="super-admin-badge">EXECUTIVE</span>' : ''}
                         </td>
-                        <td>${user.id}</td>
-                        <td>${user.role}</td>
+                        <td>${escapeHtml(user.id)}</td>
+                        <td>${escapeHtml(user.role)}</td>
                         <td>
                             <span class="status-badge status-${user.status.toLowerCase()}">
                                 ${user.status}
@@ -400,11 +411,11 @@
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn btn-warning" onclick="toggleStatus('${user.id}')">
+                                <button class="btn btn-warning btn-toggle-status" data-user-id="${escapeHtml(user.id)}">
                                     ${user.status === 'Active' ? 'Ban' : 'Unban'}
                                 </button>
                                 ${!isSuperAdmin ? 
-                                    `<button class="btn btn-danger" onclick="deleteUser('${user.id}')">Delete</button>` 
+                                    `<button class="btn btn-danger btn-delete-user" data-user-id="${escapeHtml(user.id)}">Delete</button>` 
                                     : '<span style="font-size: 0.8em; color: #ffaa00;">Protected</span>'}
                             </div>
                         </td>
@@ -518,12 +529,12 @@
                 logs.forEach(log => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${log.time}</td>
-                        <td>${log.name}</td>
-                        <td>${log.id}</td>
+                        <td>${escapeHtml(log.time)}</td>
+                        <td>${escapeHtml(log.name)}</td>
+                        <td>${escapeHtml(log.id)}</td>
                         <td>
                             <span class="status-badge status-${log.status.toLowerCase()}">
-                                ${log.status}
+                                ${escapeHtml(log.status)}
                             </span>
                         </td>
                     `;
@@ -533,6 +544,25 @@
                 console.error('Error loading logs:', error);
             }
         }
+
+        // Event delegation for dynamically created buttons
+        document.addEventListener('click', (e) => {
+            // Handle toggle status button clicks
+            if (e.target.classList.contains('btn-toggle-status')) {
+                const userId = e.target.getAttribute('data-user-id');
+                if (userId) {
+                    toggleStatus(userId);
+                }
+            }
+            
+            // Handle delete button clicks
+            if (e.target.classList.contains('btn-delete-user')) {
+                const userId = e.target.getAttribute('data-user-id');
+                if (userId) {
+                    deleteUser(userId);
+                }
+            }
+        });
 
         // Initialize and set up auto-refresh
         window.addEventListener('DOMContentLoaded', () => {

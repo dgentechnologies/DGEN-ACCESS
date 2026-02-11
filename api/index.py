@@ -93,7 +93,11 @@ def verify():
     Output: "YES" or "NO"
     """
     try:
-        data = request.json.get('data', '').strip()
+        json_data = request.json
+        if not json_data:
+            return "NO", 200
+        
+        data = json_data.get('data', '').strip()
         
         if not data:
             return "NO", 200
