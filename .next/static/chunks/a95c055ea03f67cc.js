@@ -1,1 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,265,e=>{"use strict";e.i(43476),e.i(71645);let o=Error("Cannot find module '@/services/dataService'");throw o.code="MODULE_NOT_FOUND",o}]);
