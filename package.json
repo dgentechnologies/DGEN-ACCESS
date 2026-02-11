@@ -1,15 +1,12 @@
 {
   "name": "dgen-access-control-system",
-  "version": "2.0.0",
-  "description": "DGEN Access Control System - Premium Professional Edition",
+  "version": "3.0.0",
+  "description": "DGEN Access Control System - Next.js Edition",
   "scripts": {
-    "install:all": "cd backend && npm install && cd ../frontend && npm install",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "start:backend": "cd backend && npm start",
-    "start:frontend": "cd frontend && npm run dev",
-    "build:frontend": "cd frontend && npm run build",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "test": "echo \"Tests not implemented yet\" && exit 0"
   },
   "repository": {
@@ -21,13 +18,29 @@
     "iot",
     "firebase",
     "react",
-    "nodejs",
+    "nextjs",
     "esp32",
     "rfid"
   ],
   "author": "DGEN Technologies",
   "license": "ISC",
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "autoprefixer": "^10.4.24",
+    "concurrently": "^8.2.2",
+    "eslint": "^10.0.0",
+    "eslint-config-next": "^16.1.6",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "axios": "^1.13.5",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.1",
+    "framer-motion": "^12.34.0",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-hot-toast": "^2.6.0"
   }
 }
