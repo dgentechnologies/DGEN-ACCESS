@@ -1,5 +1,15 @@
 # DGEN Access Control System
 
+> ⚠️ **Version 2.0 Available!** This repository now contains a premium professional version with React + Node.js + Firebase.
+> 
+> - 📖 See [README_v2.md](README_v2.md) for the new system documentation
+> - 🔄 See [MIGRATION.md](MIGRATION.md) for migration guide
+> - 🗂️ Legacy Flask version documentation below (for reference)
+
+---
+
+## Legacy Documentation (v1.0 - Flask)
+
 A complete, serverless Access Control Server for IoT projects, built with Flask and designed for Vercel deployment.
 
 ## 🚀 Features
