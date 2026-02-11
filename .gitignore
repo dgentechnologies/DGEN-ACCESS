@@ -26,6 +26,12 @@ yarn-error.log*
 package-lock.json
 yarn.lock
 
+# Next.js
+.next/
+out/
+build/
+dist/
+
 # Build outputs
 backend/dist/
 frontend/build/
@@ -55,3 +61,7 @@ ui-debug.log
 .env
 .env.local
 .env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
