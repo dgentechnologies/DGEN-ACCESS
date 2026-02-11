@@ -14,19 +14,26 @@ import {
 } from '@heroicons/react/24/outline';
 import LayoutWrapper from '@/components/LayoutWrapper';
 
+const MAX_LOGS = 100;
+
 export default function Logs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [realtimeEnabled, setRealtimeEnabled] = useState(false);
 
   useEffect(() => {
-    setupRealtimeListener();
+    const unsubscribe = setupRealtimeListener();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const setupRealtimeListener = () => {
     try {
       const logsRef = collection(firestoreDb, 'logs');
-      const q = query(logsRef, orderBy('timestamp', 'desc'), limit(100));
+      const q = query(logsRef, orderBy('timestamp', 'desc'), limit(MAX_LOGS));
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const logsArray = snapshot.docs.map((doc) => ({
@@ -44,19 +51,20 @@ export default function Logs() {
         fetchLogs();
       });
 
-      return () => unsubscribe();
+      return unsubscribe;
     } catch (error) {
       console.error('Error setting up realtime listener:', error);
       setRealtimeEnabled(false);
       setLoading(false);
       // Fallback to API fetch
       fetchLogs();
+      return null;
     }
   };
 
   const fetchLogs = async () => {
     try {
-      const response = await logService.getAll(100);
+      const response = await logService.getAll(MAX_LOGS);
       if (response.success) {
         setLogs(response.data);
       }

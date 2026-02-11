@@ -25,7 +25,12 @@ export default function Home() {
   const [realtimeEnabled, setRealtimeEnabled] = useState(false);
 
   useEffect(() => {
-    setupRealtimeListener();
+    const unsubscribe = setupRealtimeListener();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const setupRealtimeListener = () => {
