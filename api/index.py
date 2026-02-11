@@ -52,7 +52,29 @@ ACCESS_LOGS = []
 def find_user_by_data(data):
     """
     Search for user by ID or Name
+    Handles both plain format and formatted strings like "Name: X | ID: Y | Role: Z"
     """
+    # Parse formatted data if it contains pipe separators
+    if '|' in data:
+        # Extract ID, name, or role from formatted string
+        parts = data.split('|')
+        for part in parts:
+            part = part.strip()
+            if ':' in part:
+                key, value = part.split(':', 1)
+                key = key.strip().lower()
+                value = value.strip()
+                
+                # Try to find user by ID
+                if key == 'id' and value in USERS:
+                    return USERS[value]
+                
+                # Try to find user by name
+                if key == 'name':
+                    for user_id, user in USERS.items():
+                        if user["name"].lower() == value.lower():
+                            return user
+    
     # First try exact ID match
     if data in USERS:
         return USERS[data]
