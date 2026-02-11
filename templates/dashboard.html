@@ -783,28 +783,28 @@
                     row.innerHTML = `
                         <td>
                             ${escapeHtml(user.name)}
-                            ${isSuperAdmin ? '<span class="executive-badge">👑 Executive</span>' : ''}
+                            ${isSuperAdmin ? '<span class="executive-badge"><span aria-hidden="true">👑</span> Executive</span>' : ''}
                         </td>
                         <td>${escapeHtml(user.id)}</td>
                         <td>${escapeHtml(user.role)}</td>
                         <td>
                             <span class="status-badge status-${user.status.toLowerCase()}">
-                                ${user.status === 'Active' ? '✓' : '🚫'}
+                                <span aria-hidden="true">${user.status === 'Active' ? '✓' : '🚫'}</span>
                                 ${user.status}
                             </span>
                         </td>
                         <td>
                             <div class="action-buttons">
                                 <button class="btn btn-warning btn-toggle-status" data-user-id="${escapeHtml(user.id)}">
-                                    ${user.status === 'Active' ? '🚫' : '✓'}
+                                    <span aria-hidden="true">${user.status === 'Active' ? '🚫' : '✓'}</span>
                                     ${user.status === 'Active' ? 'Ban' : 'Unban'}
                                 </button>
                                 ${!isSuperAdmin ? 
                                     `<button class="btn btn-danger btn-delete-user" data-user-id="${escapeHtml(user.id)}">
-                                        🗑️
+                                        <span aria-hidden="true">🗑️</span>
                                         Delete
                                     </button>` 
-                                    : '<span class="protected-text">🛡️ Protected</span>'}
+                                    : '<span class="protected-text"><span aria-hidden="true">🛡️</span> Protected</span>'}
                             </div>
                         </td>
                     `;
@@ -930,7 +930,7 @@
                         <td>${escapeHtml(log.id)}</td>
                         <td>
                             <span class="status-badge status-${log.status.toLowerCase()}">
-                                ${log.status === 'Granted' ? '✓' : '✗'}
+                                <span aria-hidden="true">${log.status === 'Granted' ? '✓' : '✗'}</span>
                                 ${escapeHtml(log.status)}
                             </span>
                         </td>
