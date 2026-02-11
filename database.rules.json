@@ -1,0 +1,48 @@
+{
+  "rules": {
+    "users": {
+      ".read": true,
+      ".write": true,
+      "$userId": {
+        ".validate": "newData.hasChildren(['name', 'role', 'status'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "role": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "status": {
+          ".validate": "newData.isString() && (newData.val() === 'Active' || newData.val() === 'Banned')"
+        },
+        "isSuperAdmin": {
+          ".validate": "newData.isBoolean()"
+        },
+        "createdAt": {
+          ".validate": "newData.isString()"
+        }
+      }
+    },
+    "logs": {
+      ".read": true,
+      ".write": true,
+      "$logId": {
+        ".validate": "newData.hasChildren(['userId', 'userName', 'timestamp', 'status'])",
+        "userId": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "userName": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "timestamp": {
+          ".validate": "newData.isNumber()"
+        },
+        "status": {
+          ".validate": "newData.isString() && (newData.val() === 'granted' || newData.val() === 'denied')"
+        },
+        "message": {
+          ".validate": "newData.isString()"
+        }
+      }
+    }
+  }
+}

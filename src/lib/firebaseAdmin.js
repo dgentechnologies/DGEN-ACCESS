@@ -6,16 +6,36 @@ let db, realtimeDb, app;
 try {
   // Check if Firebase app is already initialized
   if (!admin.apps.length) {
+    // Validate required environment variables
+    const requiredEnvVars = {
+      FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+      FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
+      FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
+      FIREBASE_DATABASE_URL: process.env.FIREBASE_DATABASE_URL
+    };
+
+    const missingVars = Object.entries(requiredEnvVars)
+      .filter(([key, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingVars.length > 0) {
+      throw new Error(
+        `Missing required environment variables: ${missingVars.join(', ')}\n` +
+        'Please create a .env.local file with your Firebase credentials.\n' +
+        'See SETUP.md for detailed instructions.'
+      );
+    }
+
     // Use environment variables for service account
     const serviceAccount = {
-      projectId: process.env.FIREBASE_PROJECT_ID || "dgen-access",
+      projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
     };
 
     app = admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      databaseURL: process.env.FIREBASE_DATABASE_URL || "https://dgen-access-default-rtdb.asia-southeast1.firebasedatabase.app"
+      databaseURL: process.env.FIREBASE_DATABASE_URL
     });
 
     // Firestore database instance
@@ -25,14 +45,20 @@ try {
     realtimeDb = admin.database();
 
     console.log('✓ Firebase Admin initialized successfully');
+    console.log('✓ Project ID:', process.env.FIREBASE_PROJECT_ID);
   } else {
     app = admin.app();
     db = admin.firestore();
     realtimeDb = admin.database();
   }
 } catch (error) {
-  console.error('✗ Firebase Admin initialization error:', error.message);
-  console.warn('⚠ Running without Firebase - check your configuration');
+  console.error('\n❌ Firebase Admin initialization error:');
+  console.error(error.message);
+  console.error('\n📖 Setup Instructions:');
+  console.error('1. Create a .env.local file in the root directory');
+  console.error('2. Add your Firebase service account credentials');
+  console.error('3. See SETUP.md for detailed instructions\n');
+  console.warn('⚠️  API routes will return 503 errors until Firebase is configured\n');
 }
 
 // Initialize default super admin users if Firebase is connected

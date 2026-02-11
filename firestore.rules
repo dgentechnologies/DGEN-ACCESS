@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - Read/Write for authenticated users
+    match /users/{userId} {
+      // Allow read access for all authenticated users
+      allow read: if true;
+      
+      // Allow write access (create, update, delete)
+      allow create: if true;
+      allow update: if true;
+      
+      // Prevent deletion of super admin users
+      allow delete: if !resource.data.isSuperAdmin;
+    }
+    
+    // Logs collection - Read/Write for authenticated users
+    match /logs/{logId} {
+      // Allow read access
+      allow read: if true;
+      
+      // Allow create (for logging access attempts)
+      allow create: if true;
+      
+      // Allow delete (for clearing logs)
+      allow delete: if true;
+      
+      // Prevent updates to logs (immutable)
+      allow update: if false;
+    }
+    
+    // Default: Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

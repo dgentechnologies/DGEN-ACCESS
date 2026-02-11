@@ -80,7 +80,11 @@ A complete, modern Access Control Server for IoT projects with ESP32 integration
 - Firebase project with Firestore and Realtime Database enabled
 - Firebase service account credentials
 
-### Installation
+### Installation & Setup
+
+**For detailed setup instructions, see [SETUP.md](SETUP.md)**
+
+Quick start:
 
 1. Clone the repository:
    ```bash
@@ -98,23 +102,27 @@ A complete, modern Access Control Server for IoT projects with ESP32 integration
    cp .env.example .env.local
    ```
    
-   Edit `.env.local` and add your Firebase Admin credentials:
-   ```
-   FIREBASE_PROJECT_ID=dgen-access
-   FIREBASE_CLIENT_EMAIL=your-service-account@dgen-access.iam.gserviceaccount.com
-   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-   FIREBASE_DATABASE_URL=https://dgen-access-default-rtdb.asia-southeast1.firebasedatabase.app
+   Edit `.env.local` and add your Firebase Admin credentials.
+   See [SETUP.md](SETUP.md) for detailed instructions.
+
+4. Deploy Firebase security rules:
+   ```bash
+   firebase login
+   firebase init  # Select Firestore and Realtime Database
+   firebase deploy --only firestore:rules,database
    ```
 
-4. Run development server:
+5. Run development server:
    ```bash
    npm run dev
    ```
 
-5. Open browser:
+6. Open browser:
    ```
    http://localhost:3000
    ```
+
+**Having issues?** Check the [SETUP.md](SETUP.md) troubleshooting section.
 
 ## 📦 Deployment
 
