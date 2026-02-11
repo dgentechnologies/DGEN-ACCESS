@@ -9,7 +9,7 @@ import {
 import LayoutWrapper from '@/components/LayoutWrapper';
 
 export default function Settings() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const apiUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
 
   return (
     <LayoutWrapper>
@@ -83,8 +83,7 @@ export default function Settings() {
             </p>
             <p>
               <strong className="text-white">Environment Variables:</strong> Check{' '}
-              <code className="text-purple-400">backend/.env.example</code> and{' '}
-              <code className="text-purple-400">frontend/.env.example</code>
+              <code className="text-purple-400">.env.example</code> in the root directory
             </p>
           </div>
         </div>
@@ -97,14 +96,14 @@ export default function Settings() {
           </div>
           <div className="space-y-2 text-purple-100">
             <p>1. Create a Firebase project at firebase.google.com</p>
-            <p>2. Copy configuration files:</p>
-            <p className="pl-4">- backend/.env.example → backend/.env</p>
-            <p className="pl-4">- frontend/.env.example → frontend/.env</p>
-            <p>3. Add your Firebase credentials to both .env files</p>
-            <p>4. Deploy Firebase rules using: <code className="bg-white/10 px-2 py-1 rounded">firebase deploy --only firestore:rules,database</code></p>
-            <p>5. Install dependencies and start servers:</p>
-            <p className="pl-4">- Backend: <code className="bg-white/10 px-2 py-1 rounded">cd backend && npm install && npm start</code></p>
-            <p className="pl-4">- Frontend: <code className="bg-white/10 px-2 py-1 rounded">cd frontend && npm install && npm run dev</code></p>
+            <p>2. Set up environment variables:</p>
+            <p className="pl-4">- Copy .env.example to .env.local</p>
+            <p className="pl-4">- Add your Firebase Admin credentials</p>
+            <p>3. Deploy Firebase rules using: <code className="bg-white/10 px-2 py-1 rounded">firebase deploy --only firestore:rules,database</code></p>
+            <p>4. Install dependencies and start the Next.js server:</p>
+            <p className="pl-4"><code className="bg-white/10 px-2 py-1 rounded">npm install && npm run dev</code></p>
+            <p>5. Build for production:</p>
+            <p className="pl-4"><code className="bg-white/10 px-2 py-1 rounded">npm run build</code></p>
           </div>
         </div>
       </div>
