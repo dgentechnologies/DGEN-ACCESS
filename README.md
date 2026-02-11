@@ -2,6 +2,13 @@
 
 > 🚀 **Version 3.0 - Next.js Edition** Built with React, Next.js, TailwindCSS, and Firebase
 
+**📚 Documentation:**
+- ⚡ [Quick Start](QUICKSTART.md) - Get running in 5 minutes
+- 📖 [Setup Guide](SETUP.md) - Detailed setup instructions
+- 🚀 [Deployment Guide](DEPLOYMENT.md) - Deploy to production
+- 🔧 [Troubleshooting](TROUBLESHOOTING.md) - Common issues & solutions
+- 📝 [Changelog](CHANGELOG.md) - What's new
+
 A complete, modern Access Control Server for IoT projects with ESP32 integration, built with Next.js and designed for Vercel deployment.
 
 ## 🚀 Features
@@ -80,7 +87,11 @@ A complete, modern Access Control Server for IoT projects with ESP32 integration
 - Firebase project with Firestore and Realtime Database enabled
 - Firebase service account credentials
 
-### Installation
+### Installation & Setup
+
+**For detailed setup instructions, see [SETUP.md](SETUP.md)**
+
+Quick start:
 
 1. Clone the repository:
    ```bash
@@ -98,23 +109,27 @@ A complete, modern Access Control Server for IoT projects with ESP32 integration
    cp .env.example .env.local
    ```
    
-   Edit `.env.local` and add your Firebase Admin credentials:
-   ```
-   FIREBASE_PROJECT_ID=dgen-access
-   FIREBASE_CLIENT_EMAIL=your-service-account@dgen-access.iam.gserviceaccount.com
-   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-   FIREBASE_DATABASE_URL=https://dgen-access-default-rtdb.asia-southeast1.firebasedatabase.app
+   Edit `.env.local` and add your Firebase Admin credentials.
+   See [SETUP.md](SETUP.md) for detailed instructions.
+
+4. Deploy Firebase security rules:
+   ```bash
+   firebase login
+   firebase init  # Select Firestore and Realtime Database
+   firebase deploy --only firestore:rules,database
    ```
 
-4. Run development server:
+5. Run development server:
    ```bash
    npm run dev
    ```
 
-5. Open browser:
+6. Open browser:
    ```
    http://localhost:3000
    ```
+
+**Having issues?** Check the [SETUP.md](SETUP.md) troubleshooting section.
 
 ## 📦 Deployment
 
@@ -178,10 +193,17 @@ void checkAccess(String rfidData) {
 - Frontend Firebase config is client-safe (no private keys)
 - Consider adding authentication for admin dashboard in production
 
+## 🐛 Troubleshooting
+
+Having issues? Check the [Troubleshooting Guide](TROUBLESHOOTING.md) for common problems and solutions.
+
 ## 📄 License
 
 This project is provided as-is for DGEN Technologies.
 
 ## 🤝 Support
 
-For issues or questions, please open an issue on GitHub or contact the development team.
+For issues or questions:
+- 📖 Read the [Troubleshooting Guide](TROUBLESHOOTING.md)
+- 💬 Open an issue on [GitHub](https://github.com/MrTG1B/DGEN-ACESS/issues)
+- 📧 Contact the development team

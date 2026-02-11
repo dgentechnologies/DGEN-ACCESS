@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection
+    // Note: These rules are permissive for simplicity and ESP32 integration.
+    // For production, consider:
+    // 1. Implementing Firebase Authentication
+    // 2. Adding API key validation
+    // 3. Using Firebase App Check to verify requests from your app
+    // 4. Implementing IP allowlisting in Firebase security settings
+    match /users/{userId} {
+      // Allow read access - needed for ESP32 verification and admin dashboard
+      // TODO: Add authentication for production: request.auth != null
+      allow read: if true;
+      
+      // Allow create and update - needed for adding/modifying users
+      // TODO: Add role-based access control for production
+      allow create: if true;
+      allow update: if true;
+      
+      // Prevent deletion of super admin users
+      allow delete: if !resource.data.isSuperAdmin;
+    }
+    
+    // Logs collection - Access logs
+    match /logs/{logId} {
+      // Allow read access - needed for admin dashboard
+      // TODO: Add authentication for production: request.auth != null
+      allow read: if true;
+      
+      // Allow create - needed for logging access attempts from ESP32
+      allow create: if true;
+      
+      // Allow delete - needed for clearing logs
+      // TODO: Add role-based access control for production
+      allow delete: if true;
+      
+      // Prevent updates to logs (immutable)
+      allow update: if false;
+    }
+    
+    // Default: Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
