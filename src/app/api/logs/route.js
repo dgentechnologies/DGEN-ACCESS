@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db, realtimeDb } from '@/lib/firebaseAdmin';
+import { db } from '@/lib/firebaseAdmin';
 
 export async function GET(request) {
   try {
@@ -64,11 +64,6 @@ export async function DELETE(request) {
       batch.delete(doc.ref);
     });
     await batch.commit();
-
-    // Clear Realtime Database
-    if (realtimeDb) {
-      await realtimeDb.ref('logs').remove();
-    }
 
     return NextResponse.json({
       success: true,

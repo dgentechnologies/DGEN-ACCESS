@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db, realtimeDb } from '@/lib/firebaseAdmin';
+import { db } from '@/lib/firebaseAdmin';
 
 /**
  * ESP32 Verification Endpoint
@@ -125,7 +125,7 @@ async function findUserByData(data) {
 }
 
 /**
- * Log access attempt to both Firestore and Realtime Database
+ * Log access attempt to Firestore
  */
 async function logAccess(user, status) {
   const timestamp = new Date().toISOString();
@@ -141,27 +141,6 @@ async function logAccess(user, status) {
     // Store in Firestore for queries and persistence
     if (db) {
       await db.collection('logs').add(logEntry);
-    }
-
-    // Store in Realtime Database for real-time updates
-    if (realtimeDb) {
-      const logsRef = realtimeDb.ref('logs');
-      await logsRef.push(logEntry);
-      
-      // Keep only last 100 logs
-      const snapshot = await logsRef.orderByChild('timestamp').once('value');
-      const logs = [];
-      snapshot.forEach(child => {
-        logs.push({ key: child.key, timestamp: child.val().timestamp });
-      });
-      
-      if (logs.length > 100) {
-        logs.sort((a, b) => a.timestamp - b.timestamp);
-        const toDelete = logs.slice(0, logs.length - 100);
-        for (const log of toDelete) {
-          await realtimeDb.ref(`logs/${log.key}`).remove();
-        }
-      }
     }
   } catch (error) {
     console.error('Error logging access:', error);

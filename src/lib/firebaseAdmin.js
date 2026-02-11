@@ -1,6 +1,6 @@
 import admin from 'firebase-admin';
 
-let db, realtimeDb, app;
+let db, app;
 
 // Initialize Firebase Admin SDK
 try {
@@ -10,8 +10,7 @@ try {
     const requiredEnvVars = {
       FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
       FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
-      FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
-      FIREBASE_DATABASE_URL: process.env.FIREBASE_DATABASE_URL
+      FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY
     };
 
     const missingVars = Object.entries(requiredEnvVars)
@@ -34,22 +33,17 @@ try {
     };
 
     app = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: process.env.FIREBASE_DATABASE_URL
+      credential: admin.credential.cert(serviceAccount)
     });
 
     // Firestore database instance
     db = admin.firestore();
-    
-    // Realtime Database instance
-    realtimeDb = admin.database();
 
     console.log('✓ Firebase Admin initialized successfully');
     console.log('✓ Project ID:', process.env.FIREBASE_PROJECT_ID);
   } else {
     app = admin.app();
     db = admin.firestore();
-    realtimeDb = admin.database();
   }
 } catch (error) {
   console.error('\n❌ Firebase Admin initialization error:');
@@ -121,4 +115,4 @@ if (typeof window === 'undefined') {
   initializeDefaultUsers();
 }
 
-export { admin, db, realtimeDb };
+export { admin, db };
