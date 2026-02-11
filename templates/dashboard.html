@@ -575,14 +575,14 @@
     </nav>
 
     <!-- Main Container -->
-    <div class="container">
+    <main class="container">
         <!-- Alert Container -->
         <div id="alertContainer"></div>
 
         <!-- Management Section -->
-        <section>
+        <section aria-labelledby="employee-management-title">
             <div class="section-header">
-                <h2 class="section-title">
+                <h2 class="section-title" id="employee-management-title">
                     ⚙️ Employee Management
                 </h2>
                 <p class="section-description">Add and manage employee access credentials</p>
@@ -643,11 +643,11 @@
                         <table id="userTable">
                             <thead>
                                 <tr>
-                                    <th>Employee</th>
-                                    <th>ID</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    <th scope="col">Employee</th>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Role</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="userTableBody">
@@ -660,9 +660,9 @@
         </section>
 
         <!-- Access Logs Section -->
-        <section>
+        <section aria-labelledby="access-logs-title">
             <div class="section-header">
-                <h2 class="section-title">
+                <h2 class="section-title" id="access-logs-title">
                     📜 Live Access Logs
                 </h2>
                 <p class="section-description">Real-time monitoring of all access attempts</p>
@@ -679,10 +679,10 @@
                     <table id="logsTable">
                         <thead>
                             <tr>
-                                <th>🕐 Timestamp</th>
-                                <th>👤 Name</th>
-                                <th>🆔 Employee ID</th>
-                                <th>✓ Status</th>
+                                <th scope="col"><span aria-hidden="true">🕐</span> Timestamp</th>
+                                <th scope="col"><span aria-hidden="true">👤</span> Name</th>
+                                <th scope="col"><span aria-hidden="true">🆔</span> Employee ID</th>
+                                <th scope="col"><span aria-hidden="true">✓</span> Status</th>
                             </tr>
                         </thead>
                         <tbody id="logsTableBody">
@@ -696,7 +696,7 @@
                 </div>
             </div>
         </section>
-    </div>
+    </main>
 
     <script>
         // HTML escape function to prevent XSS
@@ -733,9 +733,10 @@
             const alertContainer = document.getElementById('alertContainer');
             const alert = document.createElement('div');
             alert.className = `alert alert-${type}`;
+            alert.setAttribute('role', 'alert');
             
             const icon = type === 'success' ? '✓' : '✗';
-            alert.innerHTML = `${icon} ${message}`;
+            alert.innerHTML = `<span aria-hidden="true">${icon}</span> ${message}`;
             alert.style.display = 'block';
             alertContainer.appendChild(alert);
 
