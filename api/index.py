@@ -98,6 +98,7 @@ def verify():
         data = request.form.get('data', '').strip()
         
         # Fallback: Try JSON if form data is empty (backward compatibility)
+        print(f"Received data: {data}")  # Debug log
         if not data:
             json_data = request.get_json(silent=True)
             if json_data:
