@@ -58,22 +58,34 @@ def find_user_by_data(data):
     if '|' in data:
         # Extract ID, name, or role from formatted string
         parts = data.split('|')
+        extracted_id = None
+        extracted_name = None
+        
         for part in parts:
             part = part.strip()
             if ':' in part:
-                key, value = part.split(':', 1)
-                key = key.strip().lower()
-                value = value.strip()
-                
-                # Try to find user by ID
-                if key == 'id' and value in USERS:
-                    return USERS[value]
-                
-                # Try to find user by name
-                if key == 'name':
-                    for user_id, user in USERS.items():
-                        if user["name"].lower() == value.lower():
-                            return user
+                try:
+                    key, value = part.split(':', 1)
+                    key = key.strip().lower()
+                    value = value.strip()
+                    
+                    if key == 'id':
+                        extracted_id = value
+                    elif key == 'name':
+                        extracted_name = value
+                except ValueError:
+                    # Skip malformed parts
+                    continue
+        
+        # Prioritize ID lookup (O(1)) over name lookup
+        if extracted_id and extracted_id in USERS:
+            return USERS[extracted_id]
+        
+        # Fall back to name lookup
+        if extracted_name:
+            for user_id, user in USERS.items():
+                if user["name"].lower() == extracted_name.lower():
+                    return user
     
     # First try exact ID match
     if data in USERS:
