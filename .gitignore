@@ -18,6 +18,19 @@ pip-delete-this-directory.txt
 env/
 venv/
 
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Build outputs
+backend/dist/
+frontend/build/
+frontend/dist/
+
 # IDE
 .vscode/
 .idea/
@@ -31,3 +44,14 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Environment files (keep .env.example)
+.env
+.env.local
+.env.*.local

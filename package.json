@@ -1,0 +1,33 @@
+{
+  "name": "dgen-access-control-system",
+  "version": "2.0.0",
+  "description": "DGEN Access Control System - Premium Professional Edition",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "echo \"Tests not implemented yet\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MrTG1B/DGEN-ACESS"
+  },
+  "keywords": [
+    "access-control",
+    "iot",
+    "firebase",
+    "react",
+    "nodejs",
+    "esp32",
+    "rfid"
+  ],
+  "author": "DGEN Technologies",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
