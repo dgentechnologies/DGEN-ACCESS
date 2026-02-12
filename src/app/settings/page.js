@@ -1,15 +1,95 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   ShieldCheckIcon,
   ServerIcon,
   CpuChipIcon,
   DocumentTextIcon,
+  PencilIcon,
+  CheckIcon,
+  SunIcon,
+  MoonIcon,
+  SwatchIcon,
 } from '@heroicons/react/24/outline';
 import LayoutWrapper from '@/components/LayoutWrapper';
+import toast from 'react-hot-toast';
+
+// Constants for ID pattern placeholders
+const REQUIRED_PLACEHOLDERS = ['{DEPT}', '{SERIAL}'];
+const DEFAULT_PATTERN = 'DGEN-{DEPT}-{SERIAL}';
+
+const PATTERN_EXAMPLES = [
+  { pattern: 'DGEN-{DEPT}-{SERIAL}', example: 'DGEN-ADM-00' },
+  { pattern: 'EMP-{SERIAL}-{DEPT}', example: 'EMP-00-ADM' },
+  { pattern: 'COMPANY-{DEPT}{SERIAL}', example: 'COMPANY-ADM00' },
+];
 
 export default function Settings() {
   const apiUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+  
+  // Theme state
+  const [theme, setTheme] = useState('dark');
+  
+  // Employee ID pattern state
+  const [idPattern, setIdPattern] = useState(DEFAULT_PATTERN);
+  const [isEditingPattern, setIsEditingPattern] = useState(false);
+  const [tempPattern, setTempPattern] = useState(DEFAULT_PATTERN);
+
+  // Load settings on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Load theme
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      setTheme(savedTheme);
+      applyTheme(savedTheme);
+      
+      // Load ID pattern
+      const savedPattern = localStorage.getItem('idPattern') || DEFAULT_PATTERN;
+      setIdPattern(savedPattern);
+      setTempPattern(savedPattern);
+    }
+  }, []);
+
+  const applyTheme = (newTheme) => {
+    if (typeof window !== 'undefined') {
+      if (newTheme === 'light') {
+        document.documentElement.classList.add('light-theme');
+      } else {
+        document.documentElement.classList.remove('light-theme');
+      }
+    }
+  };
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    applyTheme(newTheme);
+    toast.success(`Switched to ${newTheme} theme`);
+  };
+
+  const handleSavePattern = () => {
+    // Validate pattern - check all required placeholders are present
+    const hasAllPlaceholders = REQUIRED_PLACEHOLDERS.every(placeholder => 
+      tempPattern.includes(placeholder)
+    );
+    
+    if (!hasAllPlaceholders) {
+      toast.error(`Pattern must include ${REQUIRED_PLACEHOLDERS.join(' and ')} placeholders`);
+      return;
+    }
+    
+    setIdPattern(tempPattern);
+    localStorage.setItem('idPattern', tempPattern);
+    setIsEditingPattern(false);
+    toast.success('Employee ID pattern updated successfully');
+  };
+
+  const handleCancelEdit = () => {
+    setTempPattern(idPattern);
+    setIsEditingPattern(false);
+  };
 
   return (
     <LayoutWrapper>
@@ -17,7 +97,134 @@ export default function Settings() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
-          <p className="text-gray-400">System configuration and information</p>
+          <p className="text-gray-400">System configuration and preferences</p>
+        </div>
+
+        {/* Theme Settings */}
+        <div className="bg-gray-900 rounded-xl border border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <SwatchIcon className="w-6 h-6 text-purple-500 mr-3" />
+              <h2 className="text-xl font-semibold text-white">Appearance</h2>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between py-3 px-4 bg-gray-800 rounded-lg">
+              <div className="flex items-center">
+                {theme === 'dark' ? (
+                  <MoonIcon className="w-5 h-5 text-purple-400 mr-3" />
+                ) : (
+                  <SunIcon className="w-5 h-5 text-yellow-400 mr-3" />
+                )}
+                <div>
+                  <span className="text-white font-medium">Theme</span>
+                  <p className="text-sm text-gray-400">
+                    Currently using {theme === 'dark' ? 'Dark' : 'Light'} theme
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleThemeToggle}
+                className={`relative inline-flex h-10 w-20 items-center rounded-full transition-colors ${
+                  theme === 'dark' ? 'bg-purple-600' : 'bg-yellow-400'
+                }`}
+              >
+                <span
+                  className={`inline-block h-8 w-8 transform rounded-full bg-white shadow-lg transition-transform ${
+                    theme === 'dark' ? 'translate-x-1' : 'translate-x-11'
+                  }`}
+                >
+                  {theme === 'dark' ? (
+                    <MoonIcon className="w-5 h-5 text-purple-600 m-1.5" />
+                  ) : (
+                    <SunIcon className="w-5 h-5 text-yellow-500 m-1.5" />
+                  )}
+                </span>
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 italic">
+              Note: Theme preference is saved locally in your browser
+            </p>
+          </div>
+        </div>
+
+        {/* Employee ID Pattern Settings */}
+        <div className="bg-gray-900 rounded-xl border border-gray-700 p-6">
+          <div className="flex items-center mb-4">
+            <ShieldCheckIcon className="w-6 h-6 text-purple-500 mr-3" />
+            <h2 className="text-xl font-semibold text-white">Employee ID Configuration</h2>
+          </div>
+          <div className="space-y-4">
+            <div className="bg-gray-800 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm font-medium text-gray-300">
+                  ID Pattern Format
+                </label>
+                {!isEditingPattern ? (
+                  <button
+                    onClick={() => setIsEditingPattern(true)}
+                    className="flex items-center px-3 py-1.5 text-sm bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-lg hover:bg-purple-500/20 transition-colors"
+                  >
+                    <PencilIcon className="w-4 h-4 mr-1.5" />
+                    Edit
+                  </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSavePattern}
+                      className="flex items-center px-3 py-1.5 text-sm bg-green-500/10 text-green-400 border border-green-500/30 rounded-lg hover:bg-green-500/20 transition-colors"
+                    >
+                      <CheckIcon className="w-4 h-4 mr-1.5" />
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="px-3 py-1.5 text-sm bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {isEditingPattern ? (
+                <input
+                  type="text"
+                  value={tempPattern}
+                  onChange={(e) => setTempPattern(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white font-mono focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder={DEFAULT_PATTERN}
+                />
+              ) : (
+                <div className="px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg">
+                  <code className="text-purple-400 font-mono">{idPattern}</code>
+                </div>
+              )}
+              
+              <div className="mt-3 space-y-2 text-sm text-gray-400">
+                <p><strong className="text-gray-300">Available placeholders:</strong></p>
+                <ul className="list-disc list-inside space-y-1 pl-2">
+                  <li><code className="text-purple-400">{REQUIRED_PLACEHOLDERS[0]}</code> - Department code (e.g., ADM, EX, EN)</li>
+                  <li><code className="text-purple-400">{REQUIRED_PLACEHOLDERS[1]}</code> - Sequential number (e.g., 00, 01, 02)</li>
+                </ul>
+                <p className="mt-2"><strong className="text-gray-300">Examples:</strong></p>
+                <ul className="list-disc list-inside space-y-1 pl-2">
+                  {PATTERN_EXAMPLES.map((item, index) => (
+                    <li key={index}>
+                      <code className="text-purple-400">{item.pattern}</code> → {item.example}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+              <p className="text-sm text-blue-400">
+                <strong>Note:</strong> Changes to the ID pattern will only apply to newly created employees. 
+                Existing employee IDs will not be modified.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Firebase Configuration */}
@@ -61,24 +268,6 @@ export default function Settings() {
               <span className="text-gray-400">Production Endpoint</span>
               <span className="text-purple-400 font-mono text-sm">https://dgen-access-control.vercel.app/verify</span>
             </div>
-          </div>
-        </div>
-
-        {/* Security Information */}
-        <div className="bg-gray-900 rounded-xl border border-gray-700 p-6">
-          <div className="flex items-center mb-4">
-            <ShieldCheckIcon className="w-6 h-6 text-purple-500 mr-3" />
-            <h2 className="text-xl font-semibold text-white">Security</h2>
-          </div>
-          <div className="space-y-3 text-gray-300">
-            <p>
-              <strong className="text-white">Firestore Rules:</strong> Located in{' '}
-              <code className="text-purple-400">firestore.rules</code>
-            </p>
-            <p>
-              <strong className="text-white">Environment Variables:</strong> Check{' '}
-              <code className="text-purple-400">.env.example</code> in the root directory
-            </p>
           </div>
         </div>
 

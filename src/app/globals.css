@@ -3,6 +3,12 @@
 :root {
   --background: #0f0f23;
   --foreground: #f0f0f0;
+  --card-bg: #1a1a2e;
+  --card-border: #374151;
+  --text-primary: #f0f0f0;
+  --text-secondary: #9ca3af;
+  --text-tertiary: #6b7280;
+  --hover-bg: #1f2937;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -10,6 +16,71 @@
     --background: #0f0f23;
     --foreground: #f0f0f0;
   }
+}
+
+/* Light theme variables */
+html.light-theme {
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --card-bg: #f9fafb;
+  --card-border: #e5e7eb;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --hover-bg: #f3f4f6;
+}
+
+html.light-theme body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Light theme component overrides */
+html.light-theme .bg-gray-900 {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+}
+
+html.light-theme .bg-gray-800 {
+  background-color: #ffffff;
+  border-color: #d1d5db;
+}
+
+html.light-theme .border-gray-700 {
+  border-color: var(--card-border);
+}
+
+html.light-theme .text-white {
+  color: var(--text-primary);
+}
+
+html.light-theme .text-gray-400 {
+  color: var(--text-secondary);
+}
+
+html.light-theme .text-gray-300 {
+  color: #4b5563;
+}
+
+html.light-theme .text-gray-500 {
+  color: var(--text-tertiary);
+}
+
+html.light-theme .text-gray-600 {
+  color: var(--text-secondary);
+}
+
+html.light-theme .hover\:bg-gray-800:hover {
+  background-color: var(--hover-bg);
+}
+
+html.light-theme .hover\:bg-gray-700:hover {
+  background-color: #e5e7eb;
+}
+
+/* Keep gradients and accent colors vibrant in light mode */
+html.light-theme .bg-gradient-to-br {
+  opacity: 0.95;
 }
 
 body {
@@ -20,6 +91,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer utilities {
