@@ -244,7 +244,7 @@ service cloud.firestore {
 After deployment, configure your ESP32 to send POST requests to:
 
 ```
-https://your-app.vercel.app/api/verify
+https://dgen-access-control.vercel.app/verify
 ```
 
 With form data:

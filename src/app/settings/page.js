@@ -55,7 +55,7 @@ export default function Settings() {
             </div>
             <div className="flex items-center justify-between py-2">
               <span className="text-gray-400">ESP32 Endpoint</span>
-              <span className="text-white font-mono text-sm">{apiUrl}/verify</span>
+              <span className="text-white font-mono text-sm">https://dgen-access-control.vercel.app/verify</span>
             </div>
           </div>
         </div>

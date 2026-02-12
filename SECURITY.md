@@ -141,10 +141,10 @@ npm install @upstash/ratelimit @upstash/redis
 
 ```cpp
 // Correct
-const char* serverUrl = "https://your-app.vercel.app/api/verify";
+const char* serverUrl = "https://dgen-access-control.vercel.app/verify";
 
 // Wrong - insecure!
-const char* serverUrl = "http://your-app.vercel.app/api/verify";
+const char* serverUrl = "http://dgen-access-control.vercel.app/verify";
 ```
 
 ### 8. Content Security Policy

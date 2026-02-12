@@ -160,7 +160,7 @@ firebase deploy --only firestore:rules,database
 After deployment, configure your ESP32 to POST to:
 
 ```
-https://your-app.vercel.app/api/verify
+https://dgen-access-control.vercel.app/verify
 ```
 
 Send form data:

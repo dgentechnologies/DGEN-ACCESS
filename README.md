@@ -162,7 +162,7 @@ Quick start:
 #include <WiFi.h>
 #include <HTTPClient.h>
 
-const char* serverUrl = "https://your-app.vercel.app/api/verify";
+const char* serverUrl = "https://dgen-access-control.vercel.app/verify";
 
 void checkAccess(String rfidData) {
   HTTPClient http;
