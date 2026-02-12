@@ -212,7 +212,6 @@ export default function Employees() {
       const response = await userService.update(editFormData.id, {
         name: editFormData.name,
         role: editFormData.role,
-        department: editFormData.department,
       });
       if (response.success) {
         toast.success('Employee updated successfully');
@@ -241,10 +240,12 @@ export default function Employees() {
     try {
       const response = await userService.toggleStatus(editFormData.id);
       if (response.success) {
+        toast.success(`Employee ${editFormData.status === 'Active' ? 'banned' : 'unbanned'} successfully`);
+        // Refetch to get accurate data from server
+        await fetchUsers();
+        // Update local state based on toggle
         const newStatus = editFormData.status === 'Active' ? 'Banned' : 'Active';
         setEditFormData({ ...editFormData, status: newStatus });
-        toast.success(`Employee ${newStatus === 'Active' ? 'unbanned' : 'banned'} successfully`);
-        fetchUsers();
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update status');
