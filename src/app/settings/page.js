@@ -15,6 +15,16 @@ import {
 import LayoutWrapper from '@/components/LayoutWrapper';
 import toast from 'react-hot-toast';
 
+// Constants for ID pattern placeholders
+const REQUIRED_PLACEHOLDERS = ['{DEPT}', '{SERIAL}'];
+const DEFAULT_PATTERN = 'DGEN-{DEPT}-{SERIAL}';
+
+const PATTERN_EXAMPLES = [
+  { pattern: 'DGEN-{DEPT}-{SERIAL}', example: 'DGEN-ADM-00' },
+  { pattern: 'EMP-{SERIAL}-{DEPT}', example: 'EMP-00-ADM' },
+  { pattern: 'COMPANY-{DEPT}{SERIAL}', example: 'COMPANY-ADM00' },
+];
+
 export default function Settings() {
   const apiUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
   
@@ -22,9 +32,9 @@ export default function Settings() {
   const [theme, setTheme] = useState('dark');
   
   // Employee ID pattern state
-  const [idPattern, setIdPattern] = useState('DGEN-{DEPT}-{SERIAL}');
+  const [idPattern, setIdPattern] = useState(DEFAULT_PATTERN);
   const [isEditingPattern, setIsEditingPattern] = useState(false);
-  const [tempPattern, setTempPattern] = useState('DGEN-{DEPT}-{SERIAL}');
+  const [tempPattern, setTempPattern] = useState(DEFAULT_PATTERN);
 
   // Load settings on mount
   useEffect(() => {
@@ -35,7 +45,7 @@ export default function Settings() {
       applyTheme(savedTheme);
       
       // Load ID pattern
-      const savedPattern = localStorage.getItem('idPattern') || 'DGEN-{DEPT}-{SERIAL}';
+      const savedPattern = localStorage.getItem('idPattern') || DEFAULT_PATTERN;
       setIdPattern(savedPattern);
       setTempPattern(savedPattern);
     }
@@ -60,9 +70,13 @@ export default function Settings() {
   };
 
   const handleSavePattern = () => {
-    // Validate pattern
-    if (!tempPattern.includes('{DEPT}') || !tempPattern.includes('{SERIAL}')) {
-      toast.error('Pattern must include {DEPT} and {SERIAL} placeholders');
+    // Validate pattern - check all required placeholders are present
+    const hasAllPlaceholders = REQUIRED_PLACEHOLDERS.every(placeholder => 
+      tempPattern.includes(placeholder)
+    );
+    
+    if (!hasAllPlaceholders) {
+      toast.error(`Pattern must include ${REQUIRED_PLACEHOLDERS.join(' and ')} placeholders`);
       return;
     }
     
@@ -179,7 +193,7 @@ export default function Settings() {
                   value={tempPattern}
                   onChange={(e) => setTempPattern(e.target.value)}
                   className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white font-mono focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="DGEN-{DEPT}-{SERIAL}"
+                  placeholder={DEFAULT_PATTERN}
                 />
               ) : (
                 <div className="px-4 py-2.5 bg-gray-900 border border-gray-700 rounded-lg">
@@ -190,14 +204,16 @@ export default function Settings() {
               <div className="mt-3 space-y-2 text-sm text-gray-400">
                 <p><strong className="text-gray-300">Available placeholders:</strong></p>
                 <ul className="list-disc list-inside space-y-1 pl-2">
-                  <li><code className="text-purple-400">{'{DEPT}'}</code> - Department code (e.g., ADM, EX, EN)</li>
-                  <li><code className="text-purple-400">{'{SERIAL}'}</code> - Sequential number (e.g., 00, 01, 02)</li>
+                  <li><code className="text-purple-400">{REQUIRED_PLACEHOLDERS[0]}</code> - Department code (e.g., ADM, EX, EN)</li>
+                  <li><code className="text-purple-400">{REQUIRED_PLACEHOLDERS[1]}</code> - Sequential number (e.g., 00, 01, 02)</li>
                 </ul>
                 <p className="mt-2"><strong className="text-gray-300">Examples:</strong></p>
                 <ul className="list-disc list-inside space-y-1 pl-2">
-                  <li><code className="text-purple-400">DGEN-{'{DEPT}'}-{'{SERIAL}'}</code> → DGEN-ADM-00</li>
-                  <li><code className="text-purple-400">EMP-{'{SERIAL}'}-{'{DEPT}'}</code> → EMP-00-ADM</li>
-                  <li><code className="text-purple-400">COMPANY-{'{DEPT}'}{'{SERIAL}'}</code> → COMPANY-ADM00</li>
+                  {PATTERN_EXAMPLES.map((item, index) => (
+                    <li key={index}>
+                      <code className="text-purple-400">{item.pattern}</code> → {item.example}
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
