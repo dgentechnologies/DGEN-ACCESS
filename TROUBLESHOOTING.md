@@ -380,14 +380,15 @@ Same as "Firebase not configured" error above.
 This is expected behavior. User IDs must be unique.
 1. Use a different ID
 2. Or delete existing user first (if it's a test user)
-3. Super admins (DGEN-EX-01 to DGEN-MK-04) cannot be deleted
+3. Super admins (DGEN-ADM-00, DGEN-EX-01 to DGEN-MK-04) cannot be deleted
 
 ### Cannot Delete Super Admins
 
 **Problem:** Delete button disabled for certain users.
 
 **Solution:**
-This is by design. The 4 default super admins are protected:
+This is by design. The 5 default super admins are protected:
+- DGEN-ADM-00 (System Administrator)
 - DGEN-EX-01 (Tirthankar Dasgupta)
 - DGEN-FI-02 (Sukomal Debnath)
 - DGEN-OP-03 (Arpan Bairagi)

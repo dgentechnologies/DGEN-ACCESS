@@ -107,7 +107,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 You should see:
 - ✓ Dashboard loads without errors
-- ✓ 4 default super admin users in Employees page
+- ✓ 5 default super admin users in Employees page
 - ✓ No console errors
 - ✓ Firebase connection status: Connected
 

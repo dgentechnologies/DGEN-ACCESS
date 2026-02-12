@@ -17,13 +17,14 @@ A complete, modern Access Control Server for IoT projects with ESP32 integration
 - **Real-time Admin Dashboard**: Modern web interface with dark theme and animations
 - **User Management**: Add, delete, and toggle access rights instantly
 - **Live Access Logs**: Real-time logging of all access attempts with Firebase
-- **Protected Super Admins**: 4 permanent executive users that cannot be deleted
+- **Protected Super Admins**: 5 permanent executive users that cannot be deleted
 - **Firebase Integration**: Full Firebase Firestore and Realtime Database support
 
 ## 📋 Default Super Admin Users
 
 | Name | ID | Role | Status |
 | :--- | :--- | :--- | :--- |
+| **System Administrator** | `DGEN-ADM-00` | Superuser / Admin | Active |
 | **Tirthankar Dasgupta** | `DGEN-EX-01` | CEO & CTO | Active |
 | **Sukomal Debnath** | `DGEN-FI-02` | CFO | Active |
 | **Arpan Bairagi** | `DGEN-OP-03` | COO | Active |

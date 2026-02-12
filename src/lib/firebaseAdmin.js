@@ -62,6 +62,14 @@ async function initializeDefaultUsers() {
   try {
     const defaultUsers = [
       {
+        id: 'DGEN-ADM-00',
+        name: 'System Administrator',
+        role: 'Superuser / Admin',
+        status: 'Active',
+        isSuperAdmin: true,
+        createdAt: new Date().toISOString()
+      },
+      {
         id: 'DGEN-EX-01',
         name: 'Tirthankar Dasgupta',
         role: 'CEO & CTO',
