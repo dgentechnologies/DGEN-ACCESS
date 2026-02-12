@@ -259,8 +259,10 @@ export default function Employees() {
 
     // Sort by ID (serial number)
     filtered.sort((a, b) => {
-      const serialA = parseInt(a.id.match(/\d+$/)?.[0] || '999', 10);
-      const serialB = parseInt(b.id.match(/\d+$/)?.[0] || '999', 10);
+      const matchA = a.id.match(/DGEN-[A-Z]+-(\d+)/);
+      const matchB = b.id.match(/DGEN-[A-Z]+-(\d+)/);
+      const serialA = matchA ? parseInt(matchA[1], 10) : 999;
+      const serialB = matchB ? parseInt(matchB[1], 10) : 999;
       return serialA - serialB;
     });
 
@@ -699,7 +701,7 @@ export default function Employees() {
                       disabled={!formData.department}
                     />
                     <p className="mt-1 text-xs text-gray-500">
-                      Format: DGEN-{'{'}DEPT{'}'}-{'{'}SERIAL{'}'} (Serial number is company-wide, not department-based)
+                      Format: DGEN-{'{'}DEPT{'}'}-{'{'}SERIAL{'}'} • Serial is company-wide sequential
                     </p>
                   </div>
 
