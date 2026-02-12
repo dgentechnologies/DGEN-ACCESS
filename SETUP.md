@@ -145,10 +145,11 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Default Super Admin Users
 
-The system automatically creates 4 super admin users on first run:
+The system automatically creates 5 super admin users on first run:
 
 | Name | ID | Role |
 |------|-----|------|
+| System Administrator | DGEN-ADM-00 | Superuser / Admin |
 | Tirthankar Dasgupta | DGEN-EX-01 | CEO & CTO |
 | Sukomal Debnath | DGEN-FI-02 | CFO |
 | Arpan Bairagi | DGEN-OP-03 | COO |
@@ -244,7 +245,7 @@ service cloud.firestore {
 After deployment, configure your ESP32 to send POST requests to:
 
 ```
-https://your-app.vercel.app/api/verify
+https://dgen-access-control.vercel.app/verify
 ```
 
 With form data:

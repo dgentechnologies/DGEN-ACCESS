@@ -107,7 +107,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 You should see:
 - ✓ Dashboard loads without errors
-- ✓ 4 default super admin users in Employees page
+- ✓ 5 default super admin users in Employees page
 - ✓ No console errors
 - ✓ Firebase connection status: Connected
 
@@ -160,7 +160,7 @@ firebase deploy --only firestore:rules,database
 After deployment, configure your ESP32 to POST to:
 
 ```
-https://your-app.vercel.app/api/verify
+https://dgen-access-control.vercel.app/verify
 ```
 
 Send form data:

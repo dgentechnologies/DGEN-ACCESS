@@ -5,62 +5,59 @@ import { db } from '@/lib/firebaseAdmin';
  * ESP32 Verification Endpoint
  * POST /api/verify
  * 
- * Maintains backward compatibility with existing ESP32 code
- * Accepts both form data and JSON
- * Returns "YES" or "NO" as plain text
+ * Accepts both Form Data (primary) and JSON (fallback)
+ * Input: Form data with 'data' field OR {"data": "DGEN-EX-01"}
+ * Output: "YES" or "NO"
  */
 export async function POST(request) {
   try {
-    // Support both form data (ESP32 primary) and JSON (fallback)
+    // Primary: Try to get form data (for ESP32 HTTPClient)
     let data = '';
     
-    const contentType = request.headers.get('content-type') || '';
-    
-    if (contentType.includes('application/x-www-form-urlencoded')) {
+    try {
       const formData = await request.formData();
       data = formData.get('data') || '';
-    } else if (contentType.includes('application/json')) {
-      const body = await request.json();
-      data = body.data || '';
-    } else {
-      // Try to parse as JSON anyway
+    } catch (formError) {
+      // Formdata parsing failed, will try JSON fallback
+      data = '';
+    }
+    
+    // Fallback: Try JSON if form data is empty (backward compatibility)
+    if (!data) {
       try {
         const body = await request.json();
         data = body.data || '';
-      } catch {
+      } catch (jsonError) {
+        // Both form data and JSON parsing failed
         data = '';
       }
     }
     
     data = data.trim();
-    console.log('ESP32 Verification request:', data);
-
+    console.log(`Received data: ${data}`);
+    
     if (!data) {
-      console.log('Empty data received');
       return new NextResponse('NO', { status: 200 });
     }
-
-    // Search for user in Firebase
+    
+    // Search for user
     const user = await findUserByData(data);
-
+    
     if (user && user.status === 'Active') {
       // User exists and is active - grant access
       await logAccess(user, 'Granted');
-      console.log(`✓ Access granted: ${user.name} (${user.id})`);
       return new NextResponse('YES', { status: 200 });
     } else if (user) {
       // User exists but is banned
       await logAccess(user, 'Denied');
-      console.log(`✗ Access denied: ${user.name} (${user.id}) - Banned`);
       return new NextResponse('NO', { status: 200 });
     } else {
       // Unknown user
       await logAccess({ name: 'Unknown', id: data }, 'Denied');
-      console.log(`✗ Access denied: Unknown user - ${data}`);
       return new NextResponse('NO', { status: 200 });
     }
   } catch (error) {
-    console.error('Error in verify endpoint:', error);
+    console.error(`Error in verify endpoint: ${error}`);
     return new NextResponse('NO', { status: 200 });
   }
 }
@@ -131,8 +128,8 @@ async function logAccess(user, status) {
   const timestamp = new Date().toISOString();
   const logEntry = {
     time: timestamp,
-    name: user.name || 'Unknown',
-    id: user.id || 'Unknown',
+    name: user ? user.name || 'Unknown' : 'Unknown',
+    id: user ? user.id || 'Unknown' : 'Unknown',
     status: status,
     timestamp: Date.now()
   };

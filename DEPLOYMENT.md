@@ -134,7 +134,7 @@ Visit your deployed URL and check:
 Update your ESP32 code with the production URL:
 
 ```cpp
-const char* serverUrl = "https://your-project.vercel.app/api/verify";
+const char* serverUrl = "https://dgen-access-control.vercel.app/verify";
 ```
 
 ### 3. Set Up Custom Domain (Optional)

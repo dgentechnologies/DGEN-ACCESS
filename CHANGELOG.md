@@ -116,7 +116,7 @@ npm run dev
 
 Visit http://localhost:3000 and verify:
 - ✓ Dashboard loads without errors
-- ✓ Employee list shows 4 default super admins
+- ✓ Employee list shows 5 default super admins
 - ✓ No console errors about Firebase
 
 ## What You Need to Do

@@ -53,9 +53,13 @@ export default function Settings() {
               <span className="text-gray-400">API URL</span>
               <span className="text-white font-mono text-sm">{apiUrl}</span>
             </div>
-            <div className="flex items-center justify-between py-2">
+            <div className="flex items-center justify-between py-2 border-b border-gray-700">
               <span className="text-gray-400">ESP32 Endpoint</span>
               <span className="text-white font-mono text-sm">{apiUrl}/verify</span>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-gray-400">Production Endpoint</span>
+              <span className="text-purple-400 font-mono text-sm">https://dgen-access-control.vercel.app/verify</span>
             </div>
           </div>
         </div>
