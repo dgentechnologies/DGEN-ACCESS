@@ -105,11 +105,19 @@ export default function Employees() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState({
     id: '',
     name: '',
     role: '',
     department: '',
+  });
+  const [editFormData, setEditFormData] = useState({
+    id: '',
+    name: '',
+    role: '',
+    department: '',
+    status: '',
   });
   
   // Filter and search states
@@ -198,11 +206,44 @@ export default function Employees() {
     }
   };
 
-  const handleToggleStatus = async (userId) => {
+  const handleEditUser = async (e) => {
+    e.preventDefault();
     try {
-      const response = await userService.toggleStatus(userId);
+      const response = await userService.update(editFormData.id, {
+        name: editFormData.name,
+        role: editFormData.role,
+        department: editFormData.department,
+      });
       if (response.success) {
-        toast.success('Status updated successfully');
+        toast.success('Employee updated successfully');
+        setShowEditModal(false);
+        setEditFormData({ id: '', name: '', role: '', department: '', status: '' });
+        fetchUsers();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update employee');
+    }
+  };
+
+  const handleOpenEditModal = (user) => {
+    const deptCode = extractDepartmentCode(user.id);
+    setEditFormData({
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      department: deptCode,
+      status: user.status,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleToggleStatusInEdit = async () => {
+    try {
+      const response = await userService.toggleStatus(editFormData.id);
+      if (response.success) {
+        const newStatus = editFormData.status === 'Active' ? 'Banned' : 'Active';
+        setEditFormData({ ...editFormData, status: newStatus });
+        toast.success(`Employee ${newStatus === 'Active' ? 'unbanned' : 'banned'} successfully`);
         fetchUsers();
       }
     } catch (error) {
@@ -588,19 +629,11 @@ export default function Employees() {
                             {!isUserSuperAdmin && (
                               <>
                                 <button
-                                  onClick={() => handleToggleStatus(user.id)}
-                                  className={`p-2 rounded-lg transition-colors ${
-                                    user.status === 'Active'
-                                      ? 'hover:bg-red-500/20 text-red-400'
-                                      : 'hover:bg-green-500/20 text-green-400'
-                                  }`}
-                                  title={user.status === 'Active' ? 'Ban User' : 'Unban User'}
+                                  onClick={() => handleOpenEditModal(user)}
+                                  className="p-2 rounded-lg hover:bg-blue-500/20 text-blue-400 transition-colors"
+                                  title="Edit User"
                                 >
-                                  {user.status === 'Active' ? (
-                                    <LockClosedIcon className="w-5 h-5" />
-                                  ) : (
-                                    <LockOpenIcon className="w-5 h-5" />
-                                  )}
+                                  <PencilIcon className="w-5 h-5" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteUser(user.id)}
@@ -757,6 +790,173 @@ export default function Employees() {
                       }`}
                     >
                       Add Employee
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Edit Employee Modal */}
+        <AnimatePresence>
+          {showEditModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowEditModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-gray-900 rounded-xl border border-gray-700 p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              >
+                <h2 className="text-2xl font-bold text-white mb-4">Edit Employee</h2>
+                <form onSubmit={handleEditUser} className="space-y-4">
+                  {/* Employee ID (Read-only) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Employee ID
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.id}
+                      disabled
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-400 font-mono cursor-not-allowed"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Employee ID cannot be changed
+                    </p>
+                  </div>
+
+                  {/* Full Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      placeholder="John Doe"
+                    />
+                  </div>
+
+                  {/* Role */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Role/Position *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editFormData.role}
+                      onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      placeholder="e.g., Senior Engineer, Marketing Manager"
+                    />
+                  </div>
+
+                  {/* Department (Read-only display) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Department
+                    </label>
+                    {editFormData.department && (
+                      <div className="p-3 bg-gray-800 rounded-lg border border-gray-700">
+                        {(() => {
+                          const dept = getDepartmentByCode(editFormData.department);
+                          const DeptIcon = dept?.icon || UserGroupIcon;
+                          return dept ? (
+                            <div className="flex items-center">
+                              <div className={`p-2 rounded-lg ${dept.bgColor} mr-3`}>
+                                <DeptIcon className={`w-5 h-5 ${dept.textColor}`} />
+                              </div>
+                              <div>
+                                <div className="text-white font-medium">{dept.name}</div>
+                                <div className="text-xs text-gray-400">{dept.focusAreas}</div>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">Unknown Department</span>
+                          );
+                        })()}
+                      </div>
+                    )}
+                    <p className="mt-1 text-xs text-gray-500">
+                      Department cannot be changed. Create a new employee to assign a different department.
+                    </p>
+                  </div>
+
+                  {/* Status Toggle */}
+                  <div className="border-t border-gray-700 pt-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-3">
+                      Employee Status
+                    </label>
+                    <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
+                      <div className="flex items-center">
+                        <span
+                          className={`inline-flex px-3 py-1.5 text-sm font-semibold rounded-full mr-3 ${
+                            editFormData.status === 'Active'
+                              ? 'bg-green-500/20 text-green-400'
+                              : 'bg-red-500/20 text-red-400'
+                          }`}
+                        >
+                          {editFormData.status}
+                        </span>
+                        <span className="text-gray-300">
+                          {editFormData.status === 'Active'
+                            ? 'Employee has active access'
+                            : 'Employee access is banned'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleToggleStatusInEdit}
+                        className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                          editFormData.status === 'Active'
+                            ? 'bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500/20'
+                            : 'bg-green-500/10 text-green-400 border border-green-500/50 hover:bg-green-500/20'
+                        }`}
+                      >
+                        {editFormData.status === 'Active' ? (
+                          <>
+                            <LockClosedIcon className="w-5 h-5 mr-2" />
+                            Ban
+                          </>
+                        ) : (
+                          <>
+                            <LockOpenIcon className="w-5 h-5 mr-2" />
+                            Unban
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEditModal(false);
+                        setEditFormData({ id: '', name: '', role: '', department: '', status: '' });
+                      }}
+                      className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
+                    >
+                      Save Changes
                     </button>
                   </div>
                 </form>
