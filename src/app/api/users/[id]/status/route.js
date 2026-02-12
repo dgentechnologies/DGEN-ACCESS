@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebaseAdmin';
 
-export async function PUT(request, { params }) {
+export async function PUT(request, context) {
   try {
     if (!db) {
       return NextResponse.json(
@@ -13,6 +13,8 @@ export async function PUT(request, { params }) {
       );
     }
 
+    // In Next.js 15+, params is a Promise
+    const params = await context.params;
     const userId = params.id;
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
