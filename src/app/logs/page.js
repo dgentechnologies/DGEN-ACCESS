@@ -102,13 +102,24 @@ export default function Logs() {
 
   // Export logs as CSV
   const handleExportLogs = () => {
+    // Proper CSV escaping function
+    const escapeCSV = (value) => {
+      if (value == null) return '';
+      const str = String(value);
+      // If value contains comma, quote, or newline, wrap in quotes and escape quotes
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
     const csvContent = [
       ['Name', 'ID', 'Status', 'Time'],
       ...filteredAndSortedLogs.map(log => [
-        log.name,
-        log.id,
-        log.status,
-        log.time
+        escapeCSV(log.name || 'Unknown'),
+        escapeCSV(log.id || 'N/A'),
+        escapeCSV(log.status || 'Unknown'),
+        escapeCSV(log.time || 'Unknown time')
       ])
     ].map(row => row.join(',')).join('\n');
 
@@ -427,49 +438,53 @@ export default function Logs() {
             </div>
           ) : (
             <div className="divide-y divide-gray-700 max-h-[600px] overflow-y-auto custom-scrollbar">
-              {filteredAndSortedLogs.map((log, index) => (
-                <motion.div
-                  key={log.id || index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: Math.min(index * 0.01, 0.3) }}
-                  className="p-4 hover:bg-gray-800/50 transition-all duration-200 group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`p-2.5 rounded-xl transition-all duration-200 group-hover:scale-110 ${
-                          log.status === 'Granted'
-                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        }`}
-                      >
-                        {log.status === 'Granted' ? (
-                          <CheckCircleIcon className="w-6 h-6" />
-                        ) : (
-                          <XCircleIcon className="w-6 h-6" />
-                        )}
+              {filteredAndSortedLogs.map((log, index) => {
+                // Only animate new items (first 10) to avoid recalculating delays
+                const shouldAnimate = index < 10;
+                return (
+                  <motion.div
+                    key={log.id || index}
+                    initial={shouldAnimate ? { opacity: 0, x: -20 } : false}
+                    animate={shouldAnimate ? { opacity: 1, x: 0 } : false}
+                    transition={shouldAnimate ? { delay: index * 0.05 } : undefined}
+                    className="p-4 hover:bg-gray-800/50 transition-all duration-200 group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div
+                          className={`p-2.5 rounded-xl transition-all duration-200 group-hover:scale-110 ${
+                            log.status === 'Granted'
+                              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                              : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                          }`}
+                        >
+                          {log.status === 'Granted' ? (
+                            <CheckCircleIcon className="w-6 h-6" />
+                          ) : (
+                            <XCircleIcon className="w-6 h-6" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-white font-medium">{log.name || 'Unknown'}</p>
+                          <p className="text-sm text-gray-400 font-mono">{log.id || 'N/A'}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-white font-medium">{log.name || 'Unknown'}</p>
-                        <p className="text-sm text-gray-400 font-mono">{log.id || 'N/A'}</p>
+                      <div className="text-right">
+                        <p
+                          className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                            log.status === 'Granted'
+                              ? 'bg-green-500/10 text-green-400'
+                              : 'bg-red-500/10 text-red-400'
+                          }`}
+                        >
+                          {log.status}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">{log.time || 'Unknown time'}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p
-                        className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                          log.status === 'Granted'
-                            ? 'bg-green-500/10 text-green-400'
-                            : 'bg-red-500/10 text-red-400'
-                        }`}
-                      >
-                        {log.status}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">{log.time || 'Unknown time'}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </motion.div>
