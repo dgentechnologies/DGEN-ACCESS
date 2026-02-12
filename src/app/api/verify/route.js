@@ -17,7 +17,6 @@ export async function POST(request) {
     try {
       const formData = await request.formData();
       data = formData.get('data') || '';
-      data = data.trim();
     } catch (formError) {
       // Formdata parsing failed, will try JSON fallback
       data = '';
@@ -28,13 +27,13 @@ export async function POST(request) {
       try {
         const body = await request.json();
         data = body.data || '';
-        data = data.trim();
       } catch (jsonError) {
         // Both form data and JSON parsing failed
         data = '';
       }
     }
     
+    data = data.trim();
     console.log(`Received data: ${data}`);
     
     if (!data) {
@@ -54,7 +53,7 @@ export async function POST(request) {
       return new NextResponse('NO', { status: 200 });
     } else {
       // Unknown user
-      await logAccess(null, 'Denied');
+      await logAccess({ name: 'Unknown', id: data }, 'Denied');
       return new NextResponse('NO', { status: 200 });
     }
   } catch (error) {
