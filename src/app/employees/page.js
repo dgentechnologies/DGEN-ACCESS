@@ -145,7 +145,7 @@ export default function Employees() {
     // Calculate department serial (find max serial in this department)
     let maxDeptSerial = 0;
     const deptUsers = allUsers.filter(user => {
-      const match = user.id.match(/DGEN-([A-Z]+)-(\d{2})\d{3}/);
+      const match = user.id.match(new RegExp(`DGEN-([A-Z]+)-(\\d{${DEPT_SERIAL_LENGTH}})\\d{${COMPANY_SERIAL_LENGTH}}`));
       if (match && match[1] === deptCode) {
         const deptSerial = parseInt(match[2], 10);
         if (deptSerial > maxDeptSerial) maxDeptSerial = deptSerial;
