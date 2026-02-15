@@ -31,12 +31,19 @@ export default function Home() {
     manualUnlock: 0,
     total: 0,
   });
+  const [userAccessStats, setUserAccessStats] = useState([]);
+  const [esp32Status, setEsp32Status] = useState({ connected: false, active: false });
   const [loading, setLoading] = useState(true);
   const [realtimeEnabled, setRealtimeEnabled] = useState(false);
 
   useEffect(() => {
     const unsubscribeUsers = setupRealtimeListener();
     const unsubscribeLogs = setupLogsListener();
+    checkESP32Status();
+    
+    // Check ESP32 status every 30 seconds
+    const esp32Interval = setInterval(checkESP32Status, 30000);
+    
     return () => {
       if (unsubscribeUsers) {
         unsubscribeUsers();
@@ -44,6 +51,7 @@ export default function Home() {
       if (unsubscribeLogs) {
         unsubscribeLogs();
       }
+      clearInterval(esp32Interval);
     };
   }, []);
 
@@ -108,6 +116,25 @@ export default function Home() {
           manualUnlock,
           total: logsArray.length,
         });
+        
+        // Calculate user-based statistics
+        const userStats = {};
+        logsArray.forEach(log => {
+          if (log.status === 'Granted' || log.status === 'Manual Unlock') {
+            const userName = log.name || 'Unknown';
+            if (!userStats[userName]) {
+              userStats[userName] = { name: userName, count: 0, id: log.id };
+            }
+            userStats[userName].count++;
+          }
+        });
+        
+        // Convert to array and sort by count
+        const sortedUserStats = Object.values(userStats)
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5); // Top 5 users
+        
+        setUserAccessStats(sortedUserStats);
       }, (error) => {
         console.error('Logs listener error:', error);
       });
@@ -116,6 +143,30 @@ export default function Home() {
     } catch (error) {
       console.error('Error setting up logs listener:', error);
       return null;
+    }
+  };
+  
+  const checkESP32Status = async () => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch('/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: 'STATUS_CHECK' }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        setEsp32Status({ connected: true, active: true });
+      } else {
+        setEsp32Status({ connected: false, active: false });
+      }
+    } catch (error) {
+      setEsp32Status({ connected: false, active: false });
     }
   };
 
@@ -228,16 +279,12 @@ export default function Home() {
             transition={{ delay: 0.4 }}
             className="bg-gradient-to-br from-green-900/30 to-gray-900 rounded-xl border border-green-700/50 p-6 shadow-lg"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-500/20 rounded-lg mr-3">
-                  <CheckCircleIcon className="w-6 h-6 text-green-400" />
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Access Granted</p>
-                  <p className="text-2xl font-bold text-green-400">{accessStats.granted}</p>
-                </div>
+            <div className="flex flex-col items-center justify-center mb-4">
+              <div className="p-2 bg-green-500/20 rounded-lg mb-3">
+                <CheckCircleIcon className="w-6 h-6 text-green-400" />
               </div>
+              <p className="text-gray-400 text-sm text-center">Access Granted</p>
+              <p className="text-2xl font-bold text-green-400">{accessStats.granted}</p>
             </div>
             <div className="mt-4">
               <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -246,7 +293,7 @@ export default function Home() {
                   style={{ width: `${accessStats.total > 0 ? (accessStats.granted / accessStats.total) * 100 : 0}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-gray-500 mt-2 text-center">
                 {accessStats.total > 0 ? Math.round((accessStats.granted / accessStats.total) * 100) : 0}% of total attempts
               </p>
             </div>
@@ -258,16 +305,12 @@ export default function Home() {
             transition={{ delay: 0.5 }}
             className="bg-gradient-to-br from-red-900/30 to-gray-900 rounded-xl border border-red-700/50 p-6 shadow-lg"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <div className="p-2 bg-red-500/20 rounded-lg mr-3">
-                  <XCircleIcon className="w-6 h-6 text-red-400" />
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Access Denied</p>
-                  <p className="text-2xl font-bold text-red-400">{accessStats.denied}</p>
-                </div>
+            <div className="flex flex-col items-center justify-center mb-4">
+              <div className="p-2 bg-red-500/20 rounded-lg mb-3">
+                <XCircleIcon className="w-6 h-6 text-red-400" />
               </div>
+              <p className="text-gray-400 text-sm text-center">Access Denied</p>
+              <p className="text-2xl font-bold text-red-400">{accessStats.denied}</p>
             </div>
             <div className="mt-4">
               <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -276,7 +319,7 @@ export default function Home() {
                   style={{ width: `${accessStats.total > 0 ? (accessStats.denied / accessStats.total) * 100 : 0}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-gray-500 mt-2 text-center">
                 {accessStats.total > 0 ? Math.round((accessStats.denied / accessStats.total) * 100) : 0}% of total attempts
               </p>
             </div>
@@ -288,16 +331,12 @@ export default function Home() {
             transition={{ delay: 0.6 }}
             className="bg-gradient-to-br from-blue-900/30 to-gray-900 rounded-xl border border-blue-700/50 p-6 shadow-lg"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-500/20 rounded-lg mr-3">
-                  <LockOpenIcon className="w-6 h-6 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Remote Unlocks</p>
-                  <p className="text-2xl font-bold text-blue-400">{accessStats.manualUnlock}</p>
-                </div>
+            <div className="flex flex-col items-center justify-center mb-4">
+              <div className="p-2 bg-blue-500/20 rounded-lg mb-3">
+                <LockOpenIcon className="w-6 h-6 text-blue-400" />
               </div>
+              <p className="text-gray-400 text-sm text-center">Remote Unlocks</p>
+              <p className="text-2xl font-bold text-blue-400">{accessStats.manualUnlock}</p>
             </div>
             <div className="mt-4">
               <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -306,18 +345,65 @@ export default function Home() {
                   style={{ width: `${accessStats.total > 0 ? (accessStats.manualUnlock / accessStats.total) * 100 : 0}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-gray-500 mt-2 text-center">
                 {accessStats.total > 0 ? Math.round((accessStats.manualUnlock / accessStats.total) * 100) : 0}% manual triggers
               </p>
             </div>
           </motion.div>
         </div>
 
-        {/* Recent Activity */}
+        {/* User Access Statistics */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
+          className="bg-gray-900 rounded-xl border border-gray-700 p-6"
+        >
+          <h2 className="text-xl font-semibold text-white mb-4">Top Users - Access Frequency</h2>
+          {userAccessStats.length === 0 ? (
+            <p className="text-gray-400 text-center py-8">No user activity data available</p>
+          ) : (
+            <div className="space-y-4">
+              {userAccessStats.map((user, index) => {
+                const maxCount = userAccessStats[0]?.count || 1;
+                const percentage = (user.count / maxCount) * 100;
+                return (
+                  <div key={user.name + index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 font-bold text-sm">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="text-white font-medium text-sm">{user.name}</p>
+                          <p className="text-xs text-gray-400">{user.id || 'N/A'}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-purple-400">{user.count}</p>
+                        <p className="text-xs text-gray-500">accesses</p>
+                      </div>
+                    </div>
+                    <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percentage}%` }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                        className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full"
+                      ></motion.div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </motion.div>
+
+        {/* Recent Activity */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
           className="bg-gray-900 rounded-xl border border-gray-700 p-6"
         >
           <h2 className="text-xl font-semibold text-white mb-4">Recent Activity</h2>
@@ -382,9 +468,16 @@ export default function Home() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-gray-400">Firestore Connection</span>
-              <span className="flex items-center text-green-500">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-                Connected
+              <span className={`flex items-center ${realtimeEnabled ? 'text-green-500' : 'text-gray-500'}`}>
+                <span className={`w-2 h-2 ${realtimeEnabled ? 'bg-green-500 animate-pulse' : 'bg-gray-500'} rounded-full mr-2`}></span>
+                {realtimeEnabled ? 'Connected' : 'Disconnected'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">ESP32 RFID Endpoint</span>
+              <span className={`flex items-center ${esp32Status.connected ? 'text-green-500' : 'text-red-500'}`}>
+                <span className={`w-2 h-2 ${esp32Status.connected ? 'bg-green-500 animate-pulse' : 'bg-red-500'} rounded-full mr-2`}></span>
+                {esp32Status.active ? 'Active' : 'Inactive'}
               </span>
             </div>
             <div className="flex items-center justify-between">
