@@ -3,7 +3,7 @@ import { isUnlockRequested, resetUnlockRequest } from '@/lib/remoteUnlockState';
 
 /**
  * ESP8266 Polling Endpoint
- * GET /api/poll
+ * GET /poll
  * 
  * ESP8266 polls this endpoint every 3 seconds
  * Returns plain text: "OPEN" or "WAIT"

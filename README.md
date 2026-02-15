@@ -72,6 +72,12 @@ A complete, modern Access Control Server for IoT projects with ESP32 integration
   - Input: Form data with `data` field or `{"data": "DGEN-EX-01"}`
   - Output: `"YES"` (access granted) or `"NO"` (access denied)
 
+### ESP8266 Remote Unlock Endpoint
+- **GET `/poll`**: Polling endpoint for remote unlock
+  - Returns: `"OPEN"` (trigger unlock) or `"WAIT"` (no action)
+  - ESP8266 should poll this every 3 seconds
+  - Example: `https://dgen-access-control.vercel.app/poll`
+
 ### Admin Dashboard Endpoints
 - **GET `/api/users`**: Get all users
 - **POST `/api/users`**: Add new user
@@ -80,6 +86,7 @@ A complete, modern Access Control Server for IoT projects with ESP32 integration
 - **DELETE `/api/users/[id]`**: Delete user
 - **GET `/api/logs`**: Get access logs
 - **DELETE `/api/logs`**: Clear all logs
+- **POST `/api/remote-open`**: Trigger remote door unlock
 
 ## 🚀 Quick Start
 
@@ -184,6 +191,45 @@ void checkAccess(String rfidData) {
     }
   }
   http.end();
+}
+```
+
+### ESP8266 Remote Unlock Polling
+```cpp
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+
+const char* pollUrl = "https://dgen-access-control.vercel.app/poll";
+
+void setup() {
+  Serial.begin(115200);
+  // WiFi connection setup here
+}
+
+void loop() {
+  HTTPClient http;
+  WiFiClient client;
+  
+  http.begin(client, pollUrl);
+  int httpCode = http.GET();
+  
+  if (httpCode > 0) {
+    String payload = http.getString();
+    
+    if (payload == "OPEN") {
+      triggerUnlock(); // Hardware action to unlock door
+      Serial.println("Remote unlock triggered!");
+    }
+    // else payload == "WAIT", do nothing
+  }
+  
+  http.end();
+  delay(3000); // Poll every 3 seconds
+}
+
+void triggerUnlock() {
+  // Your hardware unlock logic here
+  // e.g., activate relay, servo, etc.
 }
 ```
 
