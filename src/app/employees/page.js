@@ -142,10 +142,14 @@ export default function Employees() {
     // Find all users
     const allUsers = users;
     
+    // Compile regex patterns once outside loops
+    const deptPattern = new RegExp(`DGEN-([A-Z]+)-(\\d{${DEPT_SERIAL_LENGTH}})\\d{${COMPANY_SERIAL_LENGTH}}`);
+    const companyPattern = new RegExp(`DGEN-[A-Z]+-\\d{${DEPT_SERIAL_LENGTH}}(\\d{${COMPANY_SERIAL_LENGTH}})`);
+    
     // Calculate department serial (find max serial in this department)
     let maxDeptSerial = 0;
     const deptUsers = allUsers.filter(user => {
-      const match = user.id.match(new RegExp(`DGEN-([A-Z]+)-(\\d{${DEPT_SERIAL_LENGTH}})\\d{${COMPANY_SERIAL_LENGTH}}`));
+      const match = user.id.match(deptPattern);
       if (match && match[1] === deptCode) {
         const deptSerial = parseInt(match[2], 10);
         if (deptSerial > maxDeptSerial) maxDeptSerial = deptSerial;
@@ -158,9 +162,7 @@ export default function Employees() {
     // Calculate company serial (find max company serial across all users)
     let maxCompanySerial = 0;
     allUsers.forEach(user => {
-      // Match format: DGEN-{DEPT}-{DEPT_SERIAL}{COMPANY_SERIAL}
-      // Company serial is the last digits
-      const match = user.id.match(new RegExp(`DGEN-[A-Z]+-\\d{${DEPT_SERIAL_LENGTH}}(\\d{${COMPANY_SERIAL_LENGTH}})`));
+      const match = user.id.match(companyPattern);
       if (match) {
         const companySerial = parseInt(match[1], 10);
         if (companySerial > maxCompanySerial) maxCompanySerial = companySerial;
@@ -320,10 +322,11 @@ export default function Employees() {
     }
 
     // Sort by ID (company serial number - last digits)
+    // Compile pattern once outside the sort comparison
+    const sortPattern = new RegExp(`DGEN-[A-Z]+-\\d{${DEPT_SERIAL_LENGTH}}(\\d{${COMPANY_SERIAL_LENGTH}})`);
     filtered.sort((a, b) => {
-      const pattern = new RegExp(`DGEN-[A-Z]+-\\d{${DEPT_SERIAL_LENGTH}}(\\d{${COMPANY_SERIAL_LENGTH}})`);
-      const matchA = a.id.match(pattern);
-      const matchB = b.id.match(pattern);
+      const matchA = a.id.match(sortPattern);
+      const matchB = b.id.match(sortPattern);
       const serialA = matchA ? parseInt(matchA[1], 10) : MAX_SERIAL_FALLBACK;
       const serialB = matchB ? parseInt(matchB[1], 10) : MAX_SERIAL_FALLBACK;
       return serialA - serialB;
