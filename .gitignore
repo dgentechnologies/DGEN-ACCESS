@@ -65,3 +65,7 @@ ui-debug.log
 .env.test.local
 .env.production.local
 
+# Misc
+desktop.ini
+Thumbs.db
+
