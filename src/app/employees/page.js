@@ -130,26 +130,36 @@ export default function Employees() {
     fetchUsers();
   }, []);
 
-  // Generate next employee ID based on company-wide serial number
+  // Generate next employee ID based on new format: DGEN-{DEPT}-{DEPT_SERIAL}{COMPANY_SERIAL}
   const generateEmployeeId = (deptCode) => {
     if (!deptCode) return '';
     
-    // Find ALL users across all departments
+    // Find all users
     const allUsers = users;
     
-    // Extract serial numbers and find the highest
-    let maxSerial = 0;
+    // Calculate department serial (count of users in this department)
+    const deptUsers = allUsers.filter(user => {
+      const match = user.id.match(/DGEN-([A-Z]+)-/);
+      return match && match[1] === deptCode;
+    });
+    const deptSerial = String(deptUsers.length + 1).padStart(2, '0');
+    
+    // Calculate company serial (count of all users in company)
+    // Extract company serial from all existing IDs and find the highest
+    let maxCompanySerial = 0;
     allUsers.forEach(user => {
-      const match = user.id.match(/DGEN-[A-Z]+-(\d+)/);
+      // Match format: DGEN-{DEPT}-{DEPT_SERIAL}{COMPANY_SERIAL}
+      // Company serial is the last 3 digits
+      const match = user.id.match(/DGEN-[A-Z]+-\d{2}(\d{3})/);
       if (match) {
-        const serial = parseInt(match[1], 10);
-        if (serial > maxSerial) maxSerial = serial;
+        const companySerial = parseInt(match[1], 10);
+        if (companySerial > maxCompanySerial) maxCompanySerial = companySerial;
       }
     });
+    const companySerial = String(maxCompanySerial + 1).padStart(3, '0');
     
-    // Generate next serial number (padded to 2 digits)
-    const nextSerial = String(maxSerial + 1).padStart(2, '0');
-    return `DGEN-${deptCode}-${nextSerial}`;
+    // Format: DGEN-{DEPT}-{DEPT_SERIAL}{COMPANY_SERIAL}
+    return `DGEN-${deptCode}-${deptSerial}${companySerial}`;
   };
 
   // Handle department selection
@@ -267,9 +277,9 @@ export default function Employees() {
     }
   };
 
-  // Check if user is Super Admin (only DGEN-ADM-00)
+  // Check if user is Super Admin (only DGEN-ADM-00000)
   const isSuperAdmin = (userId) => {
-    return userId === 'DGEN-ADM-00';
+    return userId === 'DGEN-ADM-00000';
   };
 
   // Filter and sort users
@@ -299,12 +309,12 @@ export default function Employees() {
       filtered = filtered.filter(user => user.status === statusFilter);
     }
 
-    // Sort by ID (serial number)
+    // Sort by ID (company serial number - last 3 digits)
     filtered.sort((a, b) => {
-      const matchA = a.id.match(/DGEN-[A-Z]+-(\d+)/);
-      const matchB = b.id.match(/DGEN-[A-Z]+-(\d+)/);
-      const serialA = matchA ? parseInt(matchA[1], 10) : 999;
-      const serialB = matchB ? parseInt(matchB[1], 10) : 999;
+      const matchA = a.id.match(/DGEN-[A-Z]+-\d{2}(\d{3})/);
+      const matchB = b.id.match(/DGEN-[A-Z]+-\d{2}(\d{3})/);
+      const serialA = matchA ? parseInt(matchA[1], 10) : 999999;
+      const serialB = matchB ? parseInt(matchB[1], 10) : 999999;
       return serialA - serialB;
     });
 

@@ -20,9 +20,9 @@ const REQUIRED_PLACEHOLDERS = ['{DEPT}', '{SERIAL}'];
 const DEFAULT_PATTERN = 'DGEN-{DEPT}-{SERIAL}';
 
 const PATTERN_EXAMPLES = [
-  { pattern: 'DGEN-{DEPT}-{SERIAL}', example: 'DGEN-ADM-00' },
-  { pattern: 'EMP-{SERIAL}-{DEPT}', example: 'EMP-00-ADM' },
-  { pattern: 'COMPANY-{DEPT}{SERIAL}', example: 'COMPANY-ADM00' },
+  { pattern: 'DGEN-{DEPT}-{SERIAL}', example: 'DGEN-ADM-00000' },
+  { pattern: 'EMP-{SERIAL}-{DEPT}', example: 'EMP-00000-ADM' },
+  { pattern: 'COMPANY-{DEPT}{SERIAL}', example: 'COMPANY-ADM00000' },
 ];
 
 export default function Settings() {
