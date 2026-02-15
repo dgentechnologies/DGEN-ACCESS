@@ -25,6 +25,7 @@ const Header = () => {
     const minutes = now.getMinutes();
     const seconds = now.getSeconds();
     const ampm = hours >= 12 ? 'PM' : 'AM';
+    // Convert 24-hour to 12-hour format (0 and 12 become 12, 1-11 stay same, 13-23 become 1-11)
     const displayHours = hours % 12 || 12;
     const timeString = `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${ampm}`;
     
