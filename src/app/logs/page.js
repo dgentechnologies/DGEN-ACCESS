@@ -16,6 +16,7 @@ import {
   ArrowsUpDownIcon,
   ArrowDownTrayIcon,
   XMarkIcon,
+  LockOpenIcon,
 } from '@heroicons/react/24/outline';
 import LayoutWrapper from '@/components/LayoutWrapper';
 
@@ -178,6 +179,7 @@ export default function Logs() {
       total: logs.length,
       granted: logs.filter(l => l.status === 'Granted').length,
       denied: logs.filter(l => l.status === 'Denied').length,
+      manualUnlock: logs.filter(l => l.status === 'Manual Unlock').length,
     };
   }, [logs]);
 
@@ -226,7 +228,7 @@ export default function Logs() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -281,6 +283,26 @@ export default function Logs() {
               </div>
               <div className="p-3 bg-red-500/20 rounded-xl">
                 <XCircleIcon className="w-8 h-8 text-red-400" />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-gradient-to-br from-blue-900/30 to-gray-800 rounded-xl border border-blue-700/50 p-6 shadow-lg hover:shadow-xl transition-shadow"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm mb-1 font-medium">Remote Unlocks</p>
+                <p className="text-3xl font-bold text-blue-400">{stats.manualUnlock}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats.total > 0 ? Math.round((stats.manualUnlock / stats.total) * 100) : 0}% manual
+                </p>
+              </div>
+              <div className="p-3 bg-blue-500/20 rounded-xl">
+                <LockOpenIcon className="w-8 h-8 text-blue-400" />
               </div>
             </div>
           </motion.div>
@@ -347,17 +369,19 @@ export default function Logs() {
                     <label className="block text-sm font-medium text-gray-400 mb-2">
                       Status
                     </label>
-                    <div className="flex gap-2">
-                      {['All', 'Granted', 'Denied'].map((status) => (
+                    <div className="grid grid-cols-2 gap-2">
+                      {['All', 'Granted', 'Denied', 'Manual Unlock'].map((status) => (
                         <button
                           key={status}
                           onClick={() => setStatusFilter(status)}
-                          className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                             statusFilter === status
                               ? status === 'Granted'
                                 ? 'bg-green-500/20 text-green-400 border border-green-500/50'
                                 : status === 'Denied'
                                 ? 'bg-red-500/20 text-red-400 border border-red-500/50'
+                                : status === 'Manual Unlock'
+                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
                                 : 'bg-purple-500/20 text-purple-400 border border-purple-500/50'
                               : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700'
                           }`}
@@ -455,11 +479,15 @@ export default function Logs() {
                           className={`p-2.5 rounded-xl transition-all duration-200 group-hover:scale-110 ${
                             log.status === 'Granted'
                               ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                              : log.status === 'Manual Unlock'
+                              ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                               : 'bg-red-500/20 text-red-400 border border-red-500/30'
                           }`}
                         >
                           {log.status === 'Granted' ? (
                             <CheckCircleIcon className="w-6 h-6" />
+                          ) : log.status === 'Manual Unlock' ? (
+                            <LockOpenIcon className="w-6 h-6" />
                           ) : (
                             <XCircleIcon className="w-6 h-6" />
                           )}
@@ -474,6 +502,8 @@ export default function Logs() {
                           className={`text-sm font-semibold px-3 py-1 rounded-full ${
                             log.status === 'Granted'
                               ? 'bg-green-500/10 text-green-400'
+                              : log.status === 'Manual Unlock'
+                              ? 'bg-blue-500/10 text-blue-400'
                               : 'bg-red-500/10 text-red-400'
                           }`}
                         >
