@@ -106,6 +106,10 @@ const DEPT_SERIAL_LENGTH = 2;
 const COMPANY_SERIAL_LENGTH = 3;
 const MAX_SERIAL_FALLBACK = 999999;
 
+// Precompiled regex patterns for employee ID parsing (compiled once at module load)
+const DEPT_PATTERN = new RegExp(`DGEN-([A-Z]+)-(\\d{${DEPT_SERIAL_LENGTH}})\\d{${COMPANY_SERIAL_LENGTH}}`);
+const COMPANY_PATTERN = new RegExp(`DGEN-[A-Z]+-\\d{${DEPT_SERIAL_LENGTH}}(\\d{${COMPANY_SERIAL_LENGTH}})`);
+
 export default function Employees() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -142,14 +146,10 @@ export default function Employees() {
     // Find all users
     const allUsers = users;
     
-    // Compile regex patterns once outside loops
-    const deptPattern = new RegExp(`DGEN-([A-Z]+)-(\\d{${DEPT_SERIAL_LENGTH}})\\d{${COMPANY_SERIAL_LENGTH}}`);
-    const companyPattern = new RegExp(`DGEN-[A-Z]+-\\d{${DEPT_SERIAL_LENGTH}}(\\d{${COMPANY_SERIAL_LENGTH}})`);
-    
     // Calculate department serial (find max serial in this department)
     let maxDeptSerial = 0;
     const deptUsers = allUsers.filter(user => {
-      const match = user.id.match(deptPattern);
+      const match = user.id.match(DEPT_PATTERN);
       if (match && match[1] === deptCode) {
         const deptSerial = parseInt(match[2], 10);
         if (deptSerial > maxDeptSerial) maxDeptSerial = deptSerial;
@@ -162,7 +162,7 @@ export default function Employees() {
     // Calculate company serial (find max company serial across all users)
     let maxCompanySerial = 0;
     allUsers.forEach(user => {
-      const match = user.id.match(companyPattern);
+      const match = user.id.match(COMPANY_PATTERN);
       if (match) {
         const companySerial = parseInt(match[1], 10);
         if (companySerial > maxCompanySerial) maxCompanySerial = companySerial;
@@ -322,11 +322,9 @@ export default function Employees() {
     }
 
     // Sort by ID (company serial number - last digits)
-    // Compile pattern once outside the sort comparison
-    const sortPattern = new RegExp(`DGEN-[A-Z]+-\\d{${DEPT_SERIAL_LENGTH}}(\\d{${COMPANY_SERIAL_LENGTH}})`);
     filtered.sort((a, b) => {
-      const matchA = a.id.match(sortPattern);
-      const matchB = b.id.match(sortPattern);
+      const matchA = a.id.match(COMPANY_PATTERN);
+      const matchB = b.id.match(COMPANY_PATTERN);
       const serialA = matchA ? parseInt(matchA[1], 10) : MAX_SERIAL_FALLBACK;
       const serialB = matchB ? parseInt(matchB[1], 10) : MAX_SERIAL_FALLBACK;
       return serialA - serialB;
