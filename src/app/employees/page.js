@@ -101,6 +101,9 @@ const DEPARTMENTS = [
   },
 ];
 
+// Constants for employee ID sorting
+const MAX_SERIAL_FALLBACK = 999999;
+
 export default function Employees() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -313,8 +316,8 @@ export default function Employees() {
     filtered.sort((a, b) => {
       const matchA = a.id.match(/DGEN-[A-Z]+-\d{2}(\d{3})/);
       const matchB = b.id.match(/DGEN-[A-Z]+-\d{2}(\d{3})/);
-      const serialA = matchA ? parseInt(matchA[1], 10) : 999999;
-      const serialB = matchB ? parseInt(matchB[1], 10) : 999999;
+      const serialA = matchA ? parseInt(matchA[1], 10) : MAX_SERIAL_FALLBACK;
+      const serialB = matchB ? parseInt(matchB[1], 10) : MAX_SERIAL_FALLBACK;
       return serialA - serialB;
     });
 
