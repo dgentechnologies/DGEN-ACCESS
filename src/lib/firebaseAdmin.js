@@ -62,7 +62,7 @@ async function initializeDefaultUsers() {
   try {
     const defaultUsers = [
       {
-        id: 'DGEN-ADM-00',
+        id: 'DGEN-ADM-00000',
         name: 'System Administrator',
         role: 'Superuser / Admin',
         status: 'Active',
@@ -70,7 +70,7 @@ async function initializeDefaultUsers() {
         createdAt: new Date().toISOString()
       },
       {
-        id: 'DGEN-EX-01',
+        id: 'DGEN-EX-01001',
         name: 'Tirthankar Dasgupta',
         role: 'CEO & CTO',
         status: 'Active',
@@ -78,7 +78,7 @@ async function initializeDefaultUsers() {
         createdAt: new Date().toISOString()
       },
       {
-        id: 'DGEN-FI-02',
+        id: 'DGEN-FI-01002',
         name: 'Sukomal Debnath',
         role: 'CFO',
         status: 'Active',
@@ -86,7 +86,7 @@ async function initializeDefaultUsers() {
         createdAt: new Date().toISOString()
       },
       {
-        id: 'DGEN-OP-03',
+        id: 'DGEN-OP-01003',
         name: 'Arpan Bairagi',
         role: 'COO',
         status: 'Active',
@@ -94,7 +94,7 @@ async function initializeDefaultUsers() {
         createdAt: new Date().toISOString()
       },
       {
-        id: 'DGEN-MK-04',
+        id: 'DGEN-MK-01004',
         name: 'Sagnik Mandal',
         role: 'CMO',
         status: 'Active',

@@ -101,6 +101,15 @@ const DEPARTMENTS = [
   },
 ];
 
+// Constants for employee ID format and sorting
+const DEPT_SERIAL_LENGTH = 2;
+const COMPANY_SERIAL_LENGTH = 3;
+const MAX_SERIAL_FALLBACK = 999999;
+
+// Precompiled regex patterns for employee ID parsing (compiled once at module load)
+const DEPT_PATTERN = new RegExp(`DGEN-([A-Z]+)-(\\d{${DEPT_SERIAL_LENGTH}})\\d{${COMPANY_SERIAL_LENGTH}}`);
+const COMPANY_PATTERN = new RegExp(`DGEN-[A-Z]+-\\d{${DEPT_SERIAL_LENGTH}}(\\d{${COMPANY_SERIAL_LENGTH}})`);
+
 export default function Employees() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -130,26 +139,39 @@ export default function Employees() {
     fetchUsers();
   }, []);
 
-  // Generate next employee ID based on company-wide serial number
+  // Generate next employee ID based on new format: DGEN-{DEPT}-{DEPT_SERIAL}{COMPANY_SERIAL}
   const generateEmployeeId = (deptCode) => {
     if (!deptCode) return '';
     
-    // Find ALL users across all departments
+    // Find all users
     const allUsers = users;
     
-    // Extract serial numbers and find the highest
-    let maxSerial = 0;
+    // Calculate department serial (find max serial in this department)
+    let maxDeptSerial = 0;
+    const deptUsers = allUsers.filter(user => {
+      const match = user.id.match(DEPT_PATTERN);
+      if (match && match[1] === deptCode) {
+        const deptSerial = parseInt(match[2], 10);
+        if (deptSerial > maxDeptSerial) maxDeptSerial = deptSerial;
+        return true;
+      }
+      return false;
+    });
+    const deptSerial = String(maxDeptSerial + 1).padStart(DEPT_SERIAL_LENGTH, '0');
+    
+    // Calculate company serial (find max company serial across all users)
+    let maxCompanySerial = 0;
     allUsers.forEach(user => {
-      const match = user.id.match(/DGEN-[A-Z]+-(\d+)/);
+      const match = user.id.match(COMPANY_PATTERN);
       if (match) {
-        const serial = parseInt(match[1], 10);
-        if (serial > maxSerial) maxSerial = serial;
+        const companySerial = parseInt(match[1], 10);
+        if (companySerial > maxCompanySerial) maxCompanySerial = companySerial;
       }
     });
+    const companySerial = String(maxCompanySerial + 1).padStart(COMPANY_SERIAL_LENGTH, '0');
     
-    // Generate next serial number (padded to 2 digits)
-    const nextSerial = String(maxSerial + 1).padStart(2, '0');
-    return `DGEN-${deptCode}-${nextSerial}`;
+    // Format: DGEN-{DEPT}-{DEPT_SERIAL}{COMPANY_SERIAL}
+    return `DGEN-${deptCode}-${deptSerial}${companySerial}`;
   };
 
   // Handle department selection
@@ -267,9 +289,9 @@ export default function Employees() {
     }
   };
 
-  // Check if user is Super Admin (only DGEN-ADM-00)
+  // Check if user is Super Admin (only DGEN-ADM-00000)
   const isSuperAdmin = (userId) => {
-    return userId === 'DGEN-ADM-00';
+    return userId === 'DGEN-ADM-00000';
   };
 
   // Filter and sort users
@@ -299,12 +321,12 @@ export default function Employees() {
       filtered = filtered.filter(user => user.status === statusFilter);
     }
 
-    // Sort by ID (serial number)
+    // Sort by ID (company serial number - last digits)
     filtered.sort((a, b) => {
-      const matchA = a.id.match(/DGEN-[A-Z]+-(\d+)/);
-      const matchB = b.id.match(/DGEN-[A-Z]+-(\d+)/);
-      const serialA = matchA ? parseInt(matchA[1], 10) : 999;
-      const serialB = matchB ? parseInt(matchB[1], 10) : 999;
+      const matchA = a.id.match(COMPANY_PATTERN);
+      const matchB = b.id.match(COMPANY_PATTERN);
+      const serialA = matchA ? parseInt(matchA[1], 10) : MAX_SERIAL_FALLBACK;
+      const serialB = matchB ? parseInt(matchB[1], 10) : MAX_SERIAL_FALLBACK;
       return serialA - serialB;
     });
 
