@@ -101,7 +101,9 @@ const DEPARTMENTS = [
   },
 ];
 
-// Constants for employee ID sorting
+// Constants for employee ID format and sorting
+const DEPT_SERIAL_LENGTH = 2;
+const COMPANY_SERIAL_LENGTH = 3;
 const MAX_SERIAL_FALLBACK = 999999;
 
 export default function Employees() {
@@ -140,26 +142,31 @@ export default function Employees() {
     // Find all users
     const allUsers = users;
     
-    // Calculate department serial (count of users in this department)
+    // Calculate department serial (find max serial in this department)
+    let maxDeptSerial = 0;
     const deptUsers = allUsers.filter(user => {
-      const match = user.id.match(/DGEN-([A-Z]+)-/);
-      return match && match[1] === deptCode;
+      const match = user.id.match(/DGEN-([A-Z]+)-(\d{2})\d{3}/);
+      if (match && match[1] === deptCode) {
+        const deptSerial = parseInt(match[2], 10);
+        if (deptSerial > maxDeptSerial) maxDeptSerial = deptSerial;
+        return true;
+      }
+      return false;
     });
-    const deptSerial = String(deptUsers.length + 1).padStart(2, '0');
+    const deptSerial = String(maxDeptSerial + 1).padStart(DEPT_SERIAL_LENGTH, '0');
     
-    // Calculate company serial (count of all users in company)
-    // Extract company serial from all existing IDs and find the highest
+    // Calculate company serial (find max company serial across all users)
     let maxCompanySerial = 0;
     allUsers.forEach(user => {
       // Match format: DGEN-{DEPT}-{DEPT_SERIAL}{COMPANY_SERIAL}
-      // Company serial is the last 3 digits
-      const match = user.id.match(/DGEN-[A-Z]+-\d{2}(\d{3})/);
+      // Company serial is the last digits
+      const match = user.id.match(new RegExp(`DGEN-[A-Z]+-\\d{${DEPT_SERIAL_LENGTH}}(\\d{${COMPANY_SERIAL_LENGTH}})`));
       if (match) {
         const companySerial = parseInt(match[1], 10);
         if (companySerial > maxCompanySerial) maxCompanySerial = companySerial;
       }
     });
-    const companySerial = String(maxCompanySerial + 1).padStart(3, '0');
+    const companySerial = String(maxCompanySerial + 1).padStart(COMPANY_SERIAL_LENGTH, '0');
     
     // Format: DGEN-{DEPT}-{DEPT_SERIAL}{COMPANY_SERIAL}
     return `DGEN-${deptCode}-${deptSerial}${companySerial}`;
@@ -312,10 +319,11 @@ export default function Employees() {
       filtered = filtered.filter(user => user.status === statusFilter);
     }
 
-    // Sort by ID (company serial number - last 3 digits)
+    // Sort by ID (company serial number - last digits)
     filtered.sort((a, b) => {
-      const matchA = a.id.match(/DGEN-[A-Z]+-\d{2}(\d{3})/);
-      const matchB = b.id.match(/DGEN-[A-Z]+-\d{2}(\d{3})/);
+      const pattern = new RegExp(`DGEN-[A-Z]+-\\d{${DEPT_SERIAL_LENGTH}}(\\d{${COMPANY_SERIAL_LENGTH}})`);
+      const matchA = a.id.match(pattern);
+      const matchB = b.id.match(pattern);
       const serialA = matchA ? parseInt(matchA[1], 10) : MAX_SERIAL_FALLBACK;
       const serialB = matchB ? parseInt(matchB[1], 10) : MAX_SERIAL_FALLBACK;
       return serialA - serialB;
