@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { LockOpenIcon, CalendarIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { LockOpenIcon, CalendarIcon, ClockIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '@/services/api';
 
-const Header = () => {
+const Header = ({ onMenuClick }) => {
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const [isUnlocking, setIsUnlocking] = useState(false);
@@ -69,29 +69,39 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gray-900 border-b border-gray-700 px-8 py-4">
-      <div className="flex items-center justify-between">
-        {/* Left side - Page info (can be passed as prop if needed) */}
-        <div>
-          <h1 className="text-xl font-semibold text-white">Access Control</h1>
+    <header className="bg-gray-900 border-b border-gray-700 px-4 sm:px-6 md:px-8 py-4">
+      <div className="flex items-center justify-between gap-4">
+        {/* Left side - Hamburger Menu & Page info */}
+        <div className="flex items-center gap-3">
+          {/* Hamburger Menu Button for Mobile */}
+          <button
+            onClick={onMenuClick}
+            className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+          >
+            <Bars3Icon className="w-6 h-6" />
+          </button>
+          
+          <div>
+            <h1 className="text-lg sm:text-xl font-semibold text-white">Access Control</h1>
+          </div>
         </div>
 
         {/* Right side - Clock, Calendar, and Remote Unlock */}
-        <div className="flex items-center space-x-6">
-          {/* Date */}
-          <div className="flex items-center space-x-2 text-gray-300">
+        <div className="flex items-center gap-3 sm:gap-4 md:gap-6">
+          {/* Date - Hidden on mobile */}
+          <div className="hidden md:flex items-center space-x-2 text-gray-300">
             <CalendarIcon className="w-5 h-5 text-purple-400" />
             <span className="text-sm font-medium">{currentDate}</span>
           </div>
 
           {/* Time */}
           <div className="flex items-center space-x-2 text-gray-300">
-            <ClockIcon className="w-5 h-5 text-purple-400" />
-            <span className="text-sm font-medium">{currentTime}</span>
+            <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+            <span className="text-xs sm:text-sm font-medium">{currentTime}</span>
           </div>
 
-          {/* Divider */}
-          <div className="h-8 w-px bg-gray-700"></div>
+          {/* Divider - Hidden on mobile */}
+          <div className="hidden md:block h-8 w-px bg-gray-700"></div>
 
           {/* Remote Unlock Button */}
           <motion.button
@@ -99,14 +109,15 @@ const Header = () => {
             whileTap={{ scale: 0.95 }}
             onClick={handleRemoteUnlock}
             disabled={isUnlocking}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 md:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
               isUnlocking
                 ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
                 : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-green-500/50'
             }`}
           >
-            <LockOpenIcon className={`w-5 h-5 ${isUnlocking ? 'animate-pulse' : ''}`} />
-            <span>{isUnlocking ? 'Processing...' : 'Remote Unlock'}</span>
+            <LockOpenIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${isUnlocking ? 'animate-pulse' : ''}`} />
+            <span className="hidden sm:inline">{isUnlocking ? 'Processing...' : 'Remote Unlock'}</span>
+            <span className="sm:hidden">{isUnlocking ? '...' : 'Unlock'}</span>
           </motion.button>
         </div>
       </div>

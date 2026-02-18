@@ -197,38 +197,38 @@ export default function Logs() {
     <LayoutWrapper>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Access Logs</h1>
-            <p className="text-gray-400">Monitor all access attempts in real-time</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Access Logs</h1>
+            <p className="text-sm sm:text-base text-gray-400">Monitor all access attempts in real-time</p>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             {realtimeEnabled && (
               <div className="flex items-center text-green-500 px-3 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-                <span className="text-sm font-medium">Live</span>
+                <span className="text-xs sm:text-sm font-medium">Live</span>
               </div>
             )}
             <button
               onClick={handleExportLogs}
-              className="flex items-center px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition-all duration-200"
+              className="flex items-center px-3 sm:px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition-all duration-200 text-xs sm:text-sm"
               disabled={logs.length === 0}
             >
-              <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
-              Export
+              <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+              <span className="hidden sm:inline">Export</span>
             </button>
             <button
               onClick={handleClearLogs}
-              className="flex items-center px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-all duration-200"
+              className="flex items-center px-3 sm:px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-all duration-200 text-xs sm:text-sm"
             >
-              <TrashIcon className="w-5 h-5 mr-2" />
-              Clear
+              <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+              <span className="hidden sm:inline">Clear</span>
             </button>
           </div>
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -315,7 +315,7 @@ export default function Logs() {
           transition={{ delay: 0.4 }}
           className="bg-gray-900 rounded-xl border border-gray-700 p-4"
         >
-          <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4">
             {/* Search Bar */}
             <div className="flex-1 relative">
               <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -324,7 +324,7 @@ export default function Logs() {
                 placeholder="Search by name or ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                className="w-full pl-10 pr-10 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
               {searchQuery && (
                 <button
@@ -339,14 +339,14 @@ export default function Logs() {
             {/* Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center px-4 py-2.5 rounded-lg border transition-all duration-200 ${
+              className={`flex items-center justify-center sm:justify-start px-4 py-2.5 rounded-lg border transition-all duration-200 whitespace-nowrap ${
                 showFilters
                   ? 'bg-purple-500/20 text-purple-400 border-purple-500/50'
                   : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'
               }`}
             >
               <FunnelIcon className="w-5 h-5 mr-2" />
-              Filters
+              <span className="text-sm">Filters</span>
               {(statusFilter !== 'All' || sortBy !== 'time-desc') && (
                 <span className="ml-2 w-2 h-2 bg-purple-400 rounded-full"></span>
               )}
@@ -363,7 +363,7 @@ export default function Logs() {
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <div className="pt-4 mt-4 border-t border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="pt-4 mt-4 border-t border-gray-700 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Status Filter */}
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
@@ -374,7 +374,7 @@ export default function Logs() {
                         <button
                           key={status}
                           onClick={() => setStatusFilter(status)}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                             statusFilter === status
                               ? status === 'Granted'
                                 ? 'bg-green-500/20 text-green-400 border border-green-500/50'
@@ -423,13 +423,13 @@ export default function Logs() {
           className="bg-gray-900 rounded-xl border border-gray-700 overflow-hidden shadow-lg"
         >
           {/* Section Header */}
-          <div className="px-6 py-4 border-b border-gray-700 bg-gray-800/50">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white flex items-center">
-                <ClockIcon className="w-5 h-5 mr-2 text-purple-400" />
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-700 bg-gray-800/50">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <h2 className="text-base sm:text-lg font-semibold text-white flex items-center">
+                <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-purple-400" />
                 Live Access Data
               </h2>
-              <span className="text-sm text-gray-400">
+              <span className="text-xs sm:text-sm text-gray-400">
                 Showing {filteredAndSortedLogs.length} of {logs.length} logs
               </span>
             </div>
@@ -471,12 +471,12 @@ export default function Logs() {
                     initial={shouldAnimate ? { opacity: 0, x: -20 } : false}
                     animate={shouldAnimate ? { opacity: 1, x: 0 } : false}
                     transition={shouldAnimate ? { delay: index * 0.05 } : undefined}
-                    className="p-4 hover:bg-gray-800/50 transition-all duration-200 group"
+                    className="p-3 sm:p-4 hover:bg-gray-800/50 transition-all duration-200 group"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                      <div className="flex items-center space-x-3 sm:space-x-4">
                         <div
-                          className={`p-2.5 rounded-xl transition-all duration-200 group-hover:scale-110 ${
+                          className={`p-2 sm:p-2.5 rounded-xl transition-all duration-200 group-hover:scale-110 ${
                             log.status === 'Granted'
                               ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                               : log.status === 'Manual Unlock'
@@ -485,21 +485,21 @@ export default function Logs() {
                           }`}
                         >
                           {log.status === 'Granted' ? (
-                            <CheckCircleIcon className="w-6 h-6" />
+                            <CheckCircleIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                           ) : log.status === 'Manual Unlock' ? (
-                            <LockOpenIcon className="w-6 h-6" />
+                            <LockOpenIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                           ) : (
-                            <XCircleIcon className="w-6 h-6" />
+                            <XCircleIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                           )}
                         </div>
-                        <div>
-                          <p className="text-white font-medium">{log.name || 'Unknown'}</p>
-                          <p className="text-sm text-gray-400 font-mono">{log.id || 'N/A'}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm sm:text-base text-white font-medium truncate">{log.name || 'Unknown'}</p>
+                          <p className="text-xs sm:text-sm text-gray-400 font-mono truncate">{log.id || 'N/A'}</p>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-1 sm:text-right pl-11 sm:pl-0">
                         <p
-                          className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                          className={`text-xs sm:text-sm font-semibold px-2 sm:px-3 py-1 rounded-full whitespace-nowrap ${
                             log.status === 'Granted'
                               ? 'bg-green-500/10 text-green-400'
                               : log.status === 'Manual Unlock'
@@ -509,7 +509,7 @@ export default function Logs() {
                         >
                           {log.status}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">{log.time || 'Unknown time'}</p>
+                        <p className="text-xs text-gray-500">{log.time || 'Unknown time'}</p>
                       </div>
                     </div>
                   </motion.div>

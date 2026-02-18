@@ -364,14 +364,14 @@ export default function Employees() {
     <LayoutWrapper>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Employees</h1>
-            <p className="text-gray-400">Manage employee access and permissions</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Employees</h1>
+            <p className="text-sm sm:text-base text-gray-400">Manage employee access and permissions</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+            className="flex items-center justify-center sm:justify-start px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm sm:text-base"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
             Add Employee
@@ -379,7 +379,7 @@ export default function Employees() {
         </div>
 
         {/* Department Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {DEPARTMENTS.map((dept) => {
             const DeptIcon = dept.icon;
             const stats = departmentStats[dept.code] || { total: 0, active: 0, banned: 0 };
@@ -534,17 +534,17 @@ export default function Employees() {
         </motion.div>
 
         {/* Results Summary */}
-        <div className="flex items-center justify-between text-sm text-gray-400">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs sm:text-sm text-gray-400">
           <span>
             Showing {filteredAndSortedUsers.length} of {users.length} employees
           </span>
-          <span>
+          <span className="hidden sm:inline">
             Sorted by ID (Sequential)
           </span>
         </div>
 
-        {/* Users Table */}
-        <div className="bg-gray-900 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+        {/* Users Table - Desktop View */}
+        <div className="hidden md:block bg-gray-900 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-800 border-b border-gray-700">
@@ -681,6 +681,119 @@ export default function Employees() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Users Cards - Mobile View */}
+        <div className="md:hidden space-y-3">
+          {filteredAndSortedUsers.length === 0 ? (
+            <div className="bg-gray-900 rounded-xl border border-gray-700 p-12 text-center">
+              <UserGroupIcon className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-400">No employees match your filters</p>
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setDepartmentFilter('All');
+                  setStatusFilter('All');
+                }}
+                className="mt-4 text-purple-400 hover:text-purple-300 text-sm font-medium"
+              >
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            filteredAndSortedUsers.map((user) => {
+              const deptCode = extractDepartmentCode(user.id);
+              const dept = getDepartmentByCode(deptCode);
+              const DeptIcon = dept?.icon || UserGroupIcon;
+              const isUserSuperAdmin = isSuperAdmin(user.id);
+              
+              return (
+                <motion.div
+                  key={user.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gray-900 rounded-xl border border-gray-700 p-4 shadow-lg"
+                >
+                  {/* Header: Avatar, Name, Status */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start space-x-3 flex-1 min-w-0">
+                      <div className={`w-10 h-10 rounded-full ${dept?.color || 'bg-purple-500'} flex items-center justify-center text-white font-semibold flex-shrink-0`}>
+                        {user.name.charAt(0)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-base font-semibold text-white truncate">{user.name}</h3>
+                        <p className="text-xs font-mono text-gray-400">{user.id}</p>
+                      </div>
+                    </div>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
+                        user.status === 'Active'
+                          ? 'bg-green-500/20 text-green-400'
+                          : 'bg-red-500/20 text-red-400'
+                      }`}
+                    >
+                      {user.status}
+                    </span>
+                  </div>
+
+                  {/* Details Grid */}
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Department</span>
+                      {dept ? (
+                        <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${dept.bgColor} ${dept.textColor}`}>
+                          <DeptIcon className="w-3 h-3 mr-1" />
+                          {dept.name}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Role</span>
+                      <span className="text-white font-medium">{user.role}</span>
+                    </div>
+                    {isUserSuperAdmin && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-400">Type</span>
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-purple-500/20 text-purple-400">
+                          <ShieldCheckIcon className="w-3 h-3 mr-1" />
+                          Super Admin
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  {!isUserSuperAdmin && (
+                    <div className="flex items-center gap-2 pt-3 border-t border-gray-700">
+                      <button
+                        onClick={() => handleOpenEditModal(user)}
+                        className="flex-1 flex items-center justify-center px-3 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors text-sm"
+                      >
+                        <PencilIcon className="w-4 h-4 mr-2" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUser(user.id)}
+                        className="flex-1 flex items-center justify-center px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors text-sm"
+                      >
+                        <TrashIcon className="w-4 h-4 mr-2" />
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                  {isUserSuperAdmin && (
+                    <div className="pt-3 border-t border-gray-700 text-center">
+                      <span className="text-xs text-gray-500 italic">
+                        Protected Account
+                      </span>
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })
+          )}
         </div>
 
         {/* Add Employee Modal */}
