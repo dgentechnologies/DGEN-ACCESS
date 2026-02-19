@@ -78,11 +78,12 @@ export async function POST(request) {
     }
 
     // Create new user
+    // Only DGEN-ADM-00000 can be admin, prevent creating new admins
     const newUser = {
       name: name.trim(),
       role: role.trim(),
       status: 'Active',
-      isAdmin: isAdmin || false,
+      isAdmin: false,
       isSuperAdmin: false,
       createdAt: new Date().toISOString()
     };

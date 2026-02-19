@@ -90,11 +90,12 @@ export async function DELETE(request, context) {
     }
 
     const userData = userDoc.data();
-    if (userData.isSuperAdmin) {
+    // Protect the admin user from deletion
+    if (userData.isSuperAdmin || userId === 'DGEN-ADM-00000') {
       return NextResponse.json(
         {
           success: false,
-          message: 'Cannot delete super admin users'
+          message: 'Cannot delete admin users'
         },
         { status: 403 }
       );
