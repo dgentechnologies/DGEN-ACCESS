@@ -52,7 +52,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { id, name, role, department } = body;
+    const { id, name, role, department, isAdmin } = body;
 
     // Validation
     if (!id || !name || !role) {
@@ -82,6 +82,7 @@ export async function POST(request) {
       name: name.trim(),
       role: role.trim(),
       status: 'Active',
+      isAdmin: isAdmin || false,
       isSuperAdmin: false,
       createdAt: new Date().toISOString()
     };
