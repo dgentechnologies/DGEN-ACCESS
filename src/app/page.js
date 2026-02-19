@@ -16,6 +16,7 @@ import {
   XCircleIcon,
 } from '@heroicons/react/24/outline';
 import LayoutWrapper from '@/components/LayoutWrapper';
+import { formatDashboardTimeIST } from '@/lib/dateUtils';
 
 export default function Home() {
   const [stats, setStats] = useState({
@@ -447,7 +448,9 @@ export default function Home() {
                     }`}>
                       {log.status}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">{new Date(log.time).toLocaleTimeString() || 'Unknown'}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formatDashboardTimeIST(log.time)}
+                    </p>
                   </div>
                 </div>
               ))}

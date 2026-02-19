@@ -69,6 +69,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isAdmin = () => {
+    // Check if user has admin access from database
     return user?.isAdmin === true || user?.isSuperAdmin === true;
   };
 

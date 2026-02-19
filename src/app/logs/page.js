@@ -18,6 +18,7 @@ import {
   XMarkIcon,
   LockOpenIcon,
 } from '@heroicons/react/24/outline';
+import { formatLogTimeIST } from '@/lib/dateUtils';
 import LayoutWrapper from '@/components/LayoutWrapper';
 
 const MAX_LOGS = 500;
@@ -120,7 +121,7 @@ export default function Logs() {
         escapeCSV(log.name || 'Unknown'),
         escapeCSV(log.id || 'N/A'),
         escapeCSV(log.status || 'Unknown'),
-        escapeCSV(log.time || 'Unknown time')
+        escapeCSV(formatLogTimeIST(log.time))
       ])
     ].map(row => row.join(',')).join('\n');
 
@@ -509,7 +510,9 @@ export default function Logs() {
                         >
                           {log.status}
                         </p>
-                        <p className="text-xs text-gray-500">{log.time || 'Unknown time'}</p>
+                        <p className="text-xs text-gray-500">
+                          {formatLogTimeIST(log.time)}
+                        </p>
                       </div>
                     </div>
                   </motion.div>

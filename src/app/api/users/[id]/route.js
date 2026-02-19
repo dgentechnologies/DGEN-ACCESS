@@ -17,7 +17,7 @@ export async function PUT(request, context) {
     const params = await context.params;
     const userId = params.id;
     const body = await request.json();
-    const { name, role } = body;
+    const { name, role, email, mobile, dob, address, emergencyContact, isAdmin } = body;
 
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
@@ -32,12 +32,42 @@ export async function PUT(request, context) {
       );
     }
 
+    // Validate email format if provided
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid email format'
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate mobile format if provided
+    if (mobile && !/^\+?[\d\s\-()]{10,}$/.test(mobile.replace(/[\s\-()]/g, ''))) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid mobile number format - must contain at least 10 digits'
+        },
+        { status: 400 }
+      );
+    }
+
     const updates = {
       updatedAt: new Date().toISOString()
     };
 
     if (name) updates.name = name.trim();
     if (role) updates.role = role.trim();
+    if (email !== undefined) updates.email = email ? email.trim() : '';
+    if (mobile !== undefined) updates.mobile = mobile ? mobile.trim() : '';
+    if (dob !== undefined) updates.dob = dob || '';
+    if (address !== undefined) updates.address = address ? address.trim() : '';
+    if (emergencyContact !== undefined) updates.emergencyContact = emergencyContact ? emergencyContact.trim() : '';
+    // NOTE: No authorization check - assumes API caller is authenticated admin
+    // Consider adding server-side session validation for production
+    if (isAdmin !== undefined) updates.isAdmin = isAdmin === true;
 
     await userRef.update(updates);
 
@@ -90,11 +120,12 @@ export async function DELETE(request, context) {
     }
 
     const userData = userDoc.data();
-    if (userData.isSuperAdmin) {
+    // Protect the admin user from deletion
+    if (userData.isSuperAdmin || userId === 'DGEN-ADM-00000') {
       return NextResponse.json(
         {
           success: false,
-          message: 'Cannot delete super admin users'
+          message: 'Cannot delete admin users'
         },
         { status: 403 }
       );

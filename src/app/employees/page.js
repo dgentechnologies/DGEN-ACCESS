@@ -121,6 +121,11 @@ export default function Employees() {
     role: '',
     department: '',
     isAdmin: false,
+    email: '',
+    mobile: '',
+    dob: '',
+    address: '',
+    emergencyContact: '',
   });
   const [editFormData, setEditFormData] = useState({
     id: '',
@@ -128,6 +133,12 @@ export default function Employees() {
     role: '',
     department: '',
     status: '',
+    email: '',
+    mobile: '',
+    dob: '',
+    address: '',
+    emergencyContact: '',
+    isAdmin: false,
   });
   
   // Filter and search states
@@ -222,7 +233,7 @@ export default function Employees() {
       if (response.success) {
         toast.success('Employee added successfully');
         setShowAddModal(false);
-        setFormData({ id: '', name: '', role: '', department: '', isAdmin: false });
+        setFormData({ id: '', name: '', role: '', department: '', isAdmin: false, email: '', mobile: '', dob: '', address: '', emergencyContact: '' });
         fetchUsers();
       }
     } catch (error) {
@@ -236,11 +247,17 @@ export default function Employees() {
       const response = await userService.update(editFormData.id, {
         name: editFormData.name,
         role: editFormData.role,
+        email: editFormData.email,
+        mobile: editFormData.mobile,
+        dob: editFormData.dob,
+        address: editFormData.address,
+        emergencyContact: editFormData.emergencyContact,
+        isAdmin: editFormData.isAdmin,
       });
       if (response.success) {
         toast.success('Employee updated successfully');
         setShowEditModal(false);
-        setEditFormData({ id: '', name: '', role: '', department: '', status: '' });
+        setEditFormData({ id: '', name: '', role: '', department: '', status: '', email: '', mobile: '', dob: '', address: '', emergencyContact: '', isAdmin: false });
         fetchUsers();
       }
     } catch (error) {
@@ -256,6 +273,12 @@ export default function Employees() {
       role: user.role,
       department: deptCode,
       status: user.status,
+      email: user.email || '',
+      mobile: user.mobile || '',
+      dob: user.dob || '',
+      address: user.address || '',
+      emergencyContact: user.emergencyContact || '',
+      isAdmin: user.isAdmin || false,
     });
     setShowEditModal(true);
   };
@@ -906,6 +929,75 @@ export default function Employees() {
                     />
                   </div>
 
+                  {/* Email */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      placeholder="employee@company.com"
+                    />
+                  </div>
+
+                  {/* Mobile Number */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Mobile Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.mobile}
+                      onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      placeholder="+1 (555) 123-4567"
+                    />
+                  </div>
+
+                  {/* Date of Birth */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Date of Birth
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.dob}
+                      onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Address */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Address
+                    </label>
+                    <textarea
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      placeholder="Street address, city, state, zip code"
+                      rows="2"
+                    />
+                  </div>
+
+                  {/* Emergency Contact */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Emergency Contact
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.emergencyContact}
+                      onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      placeholder="Name & Phone: John Doe +1 (555) 987-6543"
+                    />
+                  </div>
+
                   {/* Admin Checkbox */}
                   <div className="flex items-center p-4 bg-gray-800 rounded-lg border border-gray-700">
                     <input
@@ -929,7 +1021,7 @@ export default function Employees() {
                       type="button"
                       onClick={() => {
                         setShowAddModal(false);
-                        setFormData({ id: '', name: '', role: '', department: '', isAdmin: false });
+                        setFormData({ id: '', name: '', role: '', department: '', isAdmin: false, email: '', mobile: '', dob: '', address: '', emergencyContact: '' });
                       }}
                       className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                     >
@@ -1018,6 +1110,75 @@ export default function Employees() {
                     />
                   </div>
 
+                  {/* Email */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={editFormData.email}
+                      onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      placeholder="employee@company.com"
+                    />
+                  </div>
+
+                  {/* Mobile Number */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Mobile Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={editFormData.mobile}
+                      onChange={(e) => setEditFormData({ ...editFormData, mobile: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      placeholder="+1 (555) 123-4567"
+                    />
+                  </div>
+
+                  {/* Date of Birth */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Date of Birth
+                    </label>
+                    <input
+                      type="date"
+                      value={editFormData.dob}
+                      onChange={(e) => setEditFormData({ ...editFormData, dob: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Address */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Address
+                    </label>
+                    <textarea
+                      value={editFormData.address}
+                      onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      placeholder="Street address, city, state, zip code"
+                      rows="2"
+                    />
+                  </div>
+
+                  {/* Emergency Contact */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Emergency Contact
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.emergencyContact}
+                      onChange={(e) => setEditFormData({ ...editFormData, emergencyContact: e.target.value })}
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                      placeholder="Name & Phone: John Doe +1 (555) 987-6543"
+                    />
+                  </div>
+
                   {/* Department (Read-only display) */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -1047,6 +1208,28 @@ export default function Employees() {
                     <p className="mt-1 text-xs text-gray-500">
                       Department cannot be changed. Create a new employee to assign a different department.
                     </p>
+                  </div>
+
+                  {/* Admin Access Toggle */}
+                  <div className="border-t border-gray-700 pt-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-3">
+                      Administrator Access
+                    </label>
+                    <div className="flex items-center p-4 bg-gray-800 rounded-lg border border-gray-700">
+                      <input
+                        type="checkbox"
+                        id="isAdminEdit"
+                        checked={editFormData.isAdmin}
+                        onChange={(e) => setEditFormData({ ...editFormData, isAdmin: e.target.checked })}
+                        className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 focus:ring-2"
+                      />
+                      <label htmlFor="isAdminEdit" className="ml-3 flex-1">
+                        <div className="text-sm font-medium text-white">Grant Administrator Access</div>
+                        <div className="text-xs text-gray-400">
+                          Allow full access to dashboard, employee management, and all admin features
+                        </div>
+                      </label>
+                    </div>
                   </div>
 
                   {/* Status Toggle */}
@@ -1101,7 +1284,7 @@ export default function Employees() {
                       type="button"
                       onClick={() => {
                         setShowEditModal(false);
-                        setEditFormData({ id: '', name: '', role: '', department: '', status: '' });
+                        setEditFormData({ id: '', name: '', role: '', department: '', status: '', email: '', mobile: '', dob: '', address: '', emergencyContact: '' });
                       }}
                       className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                     >
