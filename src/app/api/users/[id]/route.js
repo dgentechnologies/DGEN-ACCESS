@@ -44,11 +44,11 @@ export async function PUT(request, context) {
     }
 
     // Validate mobile format if provided
-    if (mobile && !/^\+?[\d\s\-()]{10,}$/.test(mobile)) {
+    if (mobile && !/^\+?[\d\s\-()]{10,}$/.test(mobile.replace(/[\s\-()]/g, ''))) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Invalid mobile number format'
+          message: 'Invalid mobile number format - must contain at least 10 digits'
         },
         { status: 400 }
       );

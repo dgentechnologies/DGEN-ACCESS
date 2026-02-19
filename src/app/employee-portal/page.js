@@ -172,7 +172,16 @@ export default function EmployeePortal() {
                 <CakeIcon className="w-6 h-6 text-purple-400 mr-3" />
                 <div>
                   <p className="text-sm text-gray-400">Date of Birth</p>
-                  <p className="text-white font-medium">{new Date(user.dob).toLocaleDateString()}</p>
+                  <p className="text-white font-medium">
+                    {(() => {
+                      try {
+                        const date = new Date(user.dob);
+                        return isNaN(date.getTime()) ? 'Invalid date' : date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                      } catch {
+                        return 'Invalid date';
+                      }
+                    })()}
+                  </p>
                 </div>
               </div>
             )}

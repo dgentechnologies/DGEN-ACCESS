@@ -77,11 +77,11 @@ export async function POST(request) {
     }
 
     // Validate mobile format if provided (basic check for 10+ digits)
-    if (mobile && !/^\+?[\d\s\-()]{10,}$/.test(mobile)) {
+    if (mobile && !/^\+?[\d\s\-()]{10,}$/.test(mobile.replace(/[\s\-()]/g, ''))) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Invalid mobile number format'
+          message: 'Invalid mobile number format - must contain at least 10 digits'
         },
         { status: 400 }
       );
