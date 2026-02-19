@@ -1,3 +1,53 @@
+# What's New in Version 3.1
+
+## 🔐 Authentication and Role-Based Access Control
+
+### New Features
+
+#### User Authentication System
+- **Login Page**: Secure login page requiring employee ID and password
+- **Session Management**: Automatic session handling with localStorage
+- **Auto-redirect**: Logged-in users automatically directed to appropriate portal
+
+#### Role-Based Access Control
+- **Admin Portal**: Full access to dashboard, employee management, logs, and settings
+- **Employee Portal**: Simplified interface with remote unlock functionality only
+- **Protected Routes**: Automatic route protection based on user role
+- **User Profile Menu**: Header displays user info with logout option
+
+#### Enhanced Security Features
+- **Employee ID Tracking**: All remote unlock actions now logged with employee ID
+- **Admin Checkbox**: New option when creating employees to grant admin privileges
+- **Banned User Protection**: Banned users cannot log in to the system
+- **Session Validation**: Automatic validation of user sessions on page load
+
+### API Updates
+- **POST `/api/auth/login`**: New authentication endpoint
+- **Updated `/api/remote-open`**: Now accepts and logs employee information
+- **Updated `/api/users`**: Supports `isAdmin` field for new users
+
+### UI/UX Improvements
+- **Professional Login Page**: Clean, modern login interface with animations
+- **Employee Portal**: Dedicated portal for non-admin users
+- **User Menu**: Dropdown menu in header showing user info and logout
+- **Role-based Navigation**: Sidebar and features adapt based on user role
+
+### Documentation
+- Updated README with authentication documentation
+- Added security notes and warnings
+- Documented new API endpoints
+- Updated project structure documentation
+
+### Security Notes
+⚠️ **Important**: Current implementation uses simplified authentication for demonstration. 
+For production use:
+- Implement proper password hashing (bcrypt/argon2)
+- Use secure HTTP-only cookies instead of localStorage
+- Add rate limiting on login attempts
+- Enable two-factor authentication (2FA)
+
+---
+
 # What's New in Version 3.0
 
 ## Issues Fixed

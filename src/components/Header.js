@@ -1,15 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { LockOpenIcon, CalendarIcon, ClockIcon, Bars3Icon } from '@heroicons/react/24/outline';
+import { LockOpenIcon, CalendarIcon, ClockIcon, Bars3Icon, UserCircleIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Header = ({ onMenuClick }) => {
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const [isUnlocking, setIsUnlocking] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, logout, isAdmin } = useAuth();
 
   useEffect(() => {
     updateDateTime();
@@ -43,7 +46,10 @@ const Header = ({ onMenuClick }) => {
     setIsUnlocking(true);
     
     try {
-      const response = await api.post('/api/remote-open');
+      const response = await api.post('/api/remote-open', {
+        employeeId: user?.id,
+        employeeName: user?.name,
+      });
       
       if (response.data.success) {
         toast.success('✓ Unlock Command Sent Successfully', {
@@ -86,7 +92,7 @@ const Header = ({ onMenuClick }) => {
           </div>
         </div>
 
-        {/* Right side - Clock, Calendar, and Remote Unlock */}
+        {/* Right side - Clock, Calendar, Remote Unlock, and User Menu */}
         <div className="flex items-center gap-3 sm:gap-4 md:gap-6">
           {/* Date - Hidden on mobile */}
           <div className="hidden md:flex items-center space-x-2 text-gray-300">
@@ -103,22 +109,62 @@ const Header = ({ onMenuClick }) => {
           {/* Divider - Hidden on mobile */}
           <div className="hidden md:block h-8 w-px bg-gray-700"></div>
 
-          {/* Remote Unlock Button */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleRemoteUnlock}
-            disabled={isUnlocking}
-            className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 md:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
-              isUnlocking
-                ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-green-500/50'
-            }`}
-          >
-            <LockOpenIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${isUnlocking ? 'animate-pulse' : ''}`} />
-            <span className="hidden sm:inline">{isUnlocking ? 'Processing...' : 'Remote Unlock'}</span>
-            <span className="sm:hidden">{isUnlocking ? '...' : 'Unlock'}</span>
-          </motion.button>
+          {/* Remote Unlock Button - Only for admins */}
+          {isAdmin() && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleRemoteUnlock}
+              disabled={isUnlocking}
+              className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 md:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+                isUnlocking
+                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-green-500/50'
+              }`}
+            >
+              <LockOpenIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${isUnlocking ? 'animate-pulse' : ''}`} />
+              <span className="hidden sm:inline">{isUnlocking ? 'Processing...' : 'Remote Unlock'}</span>
+              <span className="sm:hidden">{isUnlocking ? '...' : 'Unlock'}</span>
+            </motion.button>
+          )}
+
+          {/* User Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center space-x-2 p-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+            >
+              <UserCircleIcon className="w-6 h-6" />
+              <span className="hidden md:inline text-sm font-medium">{user?.name}</span>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showUserMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowUserMenu(false)}
+                />
+                <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
+                  <div className="p-4 border-b border-gray-700">
+                    <p className="text-white font-medium">{user?.name}</p>
+                    <p className="text-sm text-gray-400 font-mono">{user?.id}</p>
+                    <p className="text-xs text-gray-500 mt-1">{user?.role}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      logout();
+                    }}
+                    className="w-full flex items-center space-x-2 px-4 py-3 text-left text-red-400 hover:bg-gray-700 transition-colors"
+                  >
+                    <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>

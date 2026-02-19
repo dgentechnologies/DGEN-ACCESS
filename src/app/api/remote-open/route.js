@@ -10,15 +10,20 @@ import { setUnlockRequested } from '@/lib/remoteUnlockState';
  */
 export async function POST(request) {
   try {
+    // Get employee info from request body
+    const body = await request.json().catch(() => ({}));
+    const employeeId = body.employeeId || 'DASHBOARD';
+    const employeeName = body.employeeName || 'Web Admin';
+    
     // Set the flag to true
     setUnlockRequested(true);
     
-    // Log the manual unlock action
+    // Log the manual unlock action with employee ID
     const timestamp = new Date().toISOString();
     const logEntry = {
       time: timestamp,
-      name: 'Web Admin',
-      id: 'DASHBOARD',
+      name: employeeName,
+      id: employeeId,
       status: 'Manual Unlock',
       timestamp: Date.now()
     };

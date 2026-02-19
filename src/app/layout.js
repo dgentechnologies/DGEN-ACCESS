@@ -1,28 +1,24 @@
+'use client';
+
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
-
-// Favicon path: Place favicon.ico in src/app/ directory
-// Next.js will automatically serve it from the app directory
-export const metadata = {
-  title: 'DGEN Access Control System',
-  description: 'Professional Access Control System with ESP32 Integration',
-  icons: {
-    icon: '/favicon.ico',
-  },
-}
-
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 5,
-}
+import { AuthProvider } from '@/contexts/AuthContext'
+import Head from 'next/head'
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <Head>
+        <title>DGEN Access Control System</title>
+        <meta name="description" content="Professional Access Control System with ESP32 Integration" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <body>
-        {children}
-        <Toaster position="top-right" />
+        <AuthProvider>
+          {children}
+          <Toaster position="top-right" />
+        </AuthProvider>
       </body>
     </html>
   )

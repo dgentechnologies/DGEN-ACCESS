@@ -5,6 +5,7 @@
 **📚 Documentation:**
 - ⚡ [Quick Start](QUICKSTART.md) - Get running in 5 minutes
 - 📖 [Setup Guide](SETUP.md) - Detailed setup instructions
+- 🔐 [Authentication Guide](AUTHENTICATION.md) - User authentication and roles
 - 🚀 [Deployment Guide](DEPLOYMENT.md) - Deploy to production
 - 🔧 [Troubleshooting](TROUBLESHOOTING.md) - Common issues & solutions
 - 📝 [Changelog](CHANGELOG.md) - What's new
@@ -13,12 +14,28 @@ A complete, modern Access Control Server for IoT projects with ESP32 integration
 
 ## 🚀 Features
 
+- **User Authentication**: Secure login system with employee ID and password
+- **Role-Based Access Control**: Separate admin and employee portals with different permissions
 - **ESP32 Integration**: Receives RFID data from ESP32 devices for access verification
 - **Real-time Admin Dashboard**: Modern web interface with dark theme and animations
-- **User Management**: Add, delete, and toggle access rights instantly
-- **Live Access Logs**: Real-time logging of all access attempts with Firebase
+- **User Management**: Add, delete, and toggle access rights instantly (Admin only)
+- **Employee Portal**: Simple interface for normal employees with remote unlock button
+- **Live Access Logs**: Real-time logging of all access attempts with employee tracking
 - **Protected Super Admins**: 5 permanent executive users that cannot be deleted
 - **Firebase Integration**: Full Firebase Firestore and Realtime Database support
+
+## 🔐 Authentication System
+
+### Login Credentials
+- **Employee ID**: Your unique employee identifier (e.g., DGEN-ADM-00)
+- **Password**: Same as your employee ID (for first-time login)
+
+### User Roles
+- **Admin Users**: Full access to dashboard, employee management, logs, and settings
+- **Regular Employees**: Access to employee portal with remote unlock button only
+
+### Default Admin Access
+All super admin users have administrator privileges by default. When creating new employees, administrators can grant admin access by checking the "Administrator Access" checkbox during user creation.
 
 ## 📋 Default Super Admin Users
 
@@ -46,19 +63,29 @@ A complete, modern Access Control Server for IoT projects with ESP32 integration
 .
 ├── src/
 │   ├── app/
-│   │   ├── api/           # API Routes (serverless functions)
-│   │   │   ├── users/     # User management endpoints
-│   │   │   ├── logs/      # Access logs endpoints
-│   │   │   └── verify/    # ESP32 verification endpoint
-│   │   ├── employees/     # Employee management page
-│   │   ├── logs/          # Access logs page
-│   │   ├── settings/      # Settings page
-│   │   ├── globals.css    # Global styles
-│   │   ├── layout.js      # Root layout
-│   │   └── page.js        # Dashboard page
-│   ├── components/        # React components
-│   ├── lib/              # Firebase config & utilities
-│   └── services/         # API service layer
+│   │   ├── api/              # API Routes (serverless functions)
+│   │   │   ├── auth/         # Authentication endpoints
+│   │   │   ├── users/        # User management endpoints
+│   │   │   ├── logs/         # Access logs endpoints
+│   │   │   ├── remote-open/  # Remote unlock endpoint
+│   │   │   └── verify/       # ESP32 verification endpoint
+│   │   ├── employee-portal/  # Employee portal page (non-admin)
+│   │   ├── employees/        # Employee management page (admin)
+│   │   ├── login/            # Login page
+│   │   ├── logs/             # Access logs page (admin)
+│   │   ├── settings/         # Settings page (admin)
+│   │   ├── globals.css       # Global styles
+│   │   ├── layout.js         # Root layout with AuthProvider
+│   │   └── page.js           # Dashboard page (admin)
+│   ├── components/           # React components
+│   │   ├── Header.js         # Header with user menu
+│   │   ├── Sidebar.js        # Navigation sidebar
+│   │   ├── LayoutWrapper.js  # Protected layout wrapper
+│   │   └── ProtectedRoute.js # Route protection HOC
+│   ├── contexts/             # React contexts
+│   │   └── AuthContext.js    # Authentication context
+│   ├── lib/                  # Firebase config & utilities
+│   └── services/             # API service layer
 ├── package.json
 ├── next.config.js
 ├── tailwind.config.js
@@ -66,6 +93,12 @@ A complete, modern Access Control Server for IoT projects with ESP32 integration
 ```
 
 ## 🌐 API Endpoints
+
+### Authentication Endpoints
+- **POST `/api/auth/login`**: User login
+  - Input: `{"employeeId": "DGEN-ADM-00", "password": "DGEN-ADM-00"}`
+  - Output: `{"success": true, "user": {...}}`
+  - Note: Password is the same as employee ID by default
 
 ### ESP32 Endpoint
 - **POST `/api/verify`**: Verify RFID data
@@ -80,13 +113,13 @@ A complete, modern Access Control Server for IoT projects with ESP32 integration
 
 ### Admin Dashboard Endpoints
 - **GET `/api/users`**: Get all users
-- **POST `/api/users`**: Add new user
+- **POST `/api/users`**: Add new user (with optional `isAdmin` field)
 - **PUT `/api/users/[id]`**: Update user
 - **PUT `/api/users/[id]/status`**: Toggle user status
 - **DELETE `/api/users/[id]`**: Delete user
 - **GET `/api/logs`**: Get access logs
 - **DELETE `/api/logs`**: Clear all logs
-- **POST `/api/remote-open`**: Trigger remote door unlock
+- **POST `/api/remote-open`**: Trigger remote door unlock (logs employee ID)
 
 ## 🚀 Quick Start
 
@@ -235,10 +268,26 @@ void triggerUnlock() {
 
 ## 🔐 Security Notes
 
-- Firebase credentials are stored securely in environment variables
-- API routes use Firebase Admin SDK for server-side operations
-- Frontend Firebase config is client-safe (no private keys)
-- Consider adding authentication for admin dashboard in production
+### ⚠️ IMPORTANT: Development Authentication
+**This implementation uses simplified authentication for demonstration purposes. DO NOT use in production without implementing proper security:**
+
+- **Current Implementation**: Password is the same as employee ID (INSECURE)
+- **Required for Production**:
+  - Implement password hashing (bcrypt, argon2, or similar)
+  - Store hashed passwords in database
+  - Require strong, unique passwords during account creation
+  - Use secure session tokens instead of localStorage
+  - Implement HTTP-only cookies for session management
+  - Add rate limiting on login attempts
+  - Enable two-factor authentication (2FA)
+
+### Current Security Features
+- **Authentication Required**: All pages except login require user authentication
+- **Role-Based Access**: Admin features are restricted to users with admin privileges
+- **Session Management**: Basic session management with localStorage validation
+- **Firebase Security**: Server credentials are stored securely in environment variables
+- **API Security**: API routes use Firebase Admin SDK for server-side operations
+- **Audit Trail**: All remote unlock actions are logged with employee ID for accountability
 
 ## 🐛 Troubleshooting
 
