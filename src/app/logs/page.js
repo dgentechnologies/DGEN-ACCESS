@@ -120,7 +120,16 @@ export default function Logs() {
         escapeCSV(log.name || 'Unknown'),
         escapeCSV(log.id || 'N/A'),
         escapeCSV(log.status || 'Unknown'),
-        escapeCSV(log.time || 'Unknown time')
+        escapeCSV(log.time ? new Date(log.time).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true,
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }) : 'Unknown time')
       ])
     ].map(row => row.join(',')).join('\n');
 
@@ -509,7 +518,18 @@ export default function Logs() {
                         >
                           {log.status}
                         </p>
-                        <p className="text-xs text-gray-500">{log.time || 'Unknown time'}</p>
+                        <p className="text-xs text-gray-500">
+                          {log.time ? new Date(log.time).toLocaleString('en-IN', {
+                            timeZone: 'Asia/Kolkata',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true,
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          }) : 'Unknown time'}
+                        </p>
                       </div>
                     </div>
                   </motion.div>

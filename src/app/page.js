@@ -447,7 +447,15 @@ export default function Home() {
                     }`}>
                       {log.status}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">{new Date(log.time).toLocaleTimeString() || 'Unknown'}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {log.time ? new Date(log.time).toLocaleString('en-IN', {
+                        timeZone: 'Asia/Kolkata',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true
+                      }) : 'Unknown'}
+                    </p>
                   </div>
                 </div>
               ))}
