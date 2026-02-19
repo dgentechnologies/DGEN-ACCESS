@@ -120,6 +120,7 @@ export default function Employees() {
     name: '',
     role: '',
     department: '',
+    isAdmin: false,
   });
   const [editFormData, setEditFormData] = useState({
     id: '',
@@ -216,11 +217,12 @@ export default function Employees() {
         name: formData.name,
         role: formData.role,
         department: formData.department,
+        isAdmin: formData.isAdmin,
       });
       if (response.success) {
         toast.success('Employee added successfully');
         setShowAddModal(false);
-        setFormData({ id: '', name: '', role: '', department: '' });
+        setFormData({ id: '', name: '', role: '', department: '', isAdmin: false });
         fetchUsers();
       }
     } catch (error) {
@@ -904,13 +906,30 @@ export default function Employees() {
                     />
                   </div>
 
+                  {/* Admin Checkbox */}
+                  <div className="flex items-center p-4 bg-gray-800 rounded-lg border border-gray-700">
+                    <input
+                      type="checkbox"
+                      id="isAdmin"
+                      checked={formData.isAdmin}
+                      onChange={(e) => setFormData({ ...formData, isAdmin: e.target.checked })}
+                      className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 focus:ring-2"
+                    />
+                    <label htmlFor="isAdmin" className="ml-3 flex-1">
+                      <div className="text-sm font-medium text-white">Administrator Access</div>
+                      <div className="text-xs text-gray-400">
+                        Grant full access to dashboard, employee management, and all features
+                      </div>
+                    </label>
+                  </div>
+
                   {/* Action Buttons */}
                   <div className="flex space-x-3 pt-4">
                     <button
                       type="button"
                       onClick={() => {
                         setShowAddModal(false);
-                        setFormData({ id: '', name: '', role: '', department: '' });
+                        setFormData({ id: '', name: '', role: '', department: '', isAdmin: false });
                       }}
                       className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                     >
