@@ -48,11 +48,31 @@ export default function EmployeePortal() {
     setIsUnlocking(true);
     
     try {
-      // Send unlock request with employee ID
-      const response = await api.post('/api/remote-open', {
+      // Build the base request payload
+      const payload = {
         employeeId: user?.id,
         employeeName: user?.name,
-      });
+      };
+
+      // Attempt to get the device's current GPS location
+      if (navigator.geolocation) {
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0,
+            });
+          });
+          payload.lat = position.coords.latitude;
+          payload.lon = position.coords.longitude;
+        } catch {
+          // Location unavailable or denied – the server will reject if required
+        }
+      }
+
+      // Send unlock request with employee ID (and location if available)
+      const response = await api.post('/api/remote-open', payload);
       
       if (response.data.success) {
         toast.success('✓ Unlock Command Sent Successfully', {
@@ -67,7 +87,8 @@ export default function EmployeePortal() {
       }
     } catch (error) {
       console.error('Error sending unlock command:', error);
-      toast.error('Error: Unable to send unlock command');
+      const msg = error.response?.data?.message || 'Error: Unable to send unlock command';
+      toast.error(msg);
     } finally {
       setIsUnlocking(false);
     }

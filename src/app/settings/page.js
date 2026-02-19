@@ -11,9 +11,11 @@ import {
   SunIcon,
   MoonIcon,
   SwatchIcon,
+  MapPinIcon,
 } from '@heroicons/react/24/outline';
 import LayoutWrapper from '@/components/LayoutWrapper';
 import toast from 'react-hot-toast';
+import api from '@/services/api';
 
 // Constants for ID pattern placeholders
 const REQUIRED_PLACEHOLDERS = ['{DEPT}', '{SERIAL}'];
@@ -36,6 +38,12 @@ export default function Settings() {
   const [isEditingPattern, setIsEditingPattern] = useState(false);
   const [tempPattern, setTempPattern] = useState(DEFAULT_PATTERN);
 
+  // Office location state
+  const [officeLocation, setOfficeLocation] = useState({ lat: '', lon: '', radius: '100' });
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [tempLocation, setTempLocation] = useState({ lat: '', lon: '', radius: '100' });
+  const [isSavingLocation, setIsSavingLocation] = useState(false);
+
   // Load settings on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -49,6 +57,21 @@ export default function Settings() {
       setIdPattern(savedPattern);
       setTempPattern(savedPattern);
     }
+
+    // Load office location from API
+    api.get('/api/settings/office-location').then((res) => {
+      if (res.data.success && res.data.data) {
+        const loc = {
+          lat: String(res.data.data.lat),
+          lon: String(res.data.data.lon),
+          radius: String(res.data.data.radius ?? 100),
+        };
+        setOfficeLocation(loc);
+        setTempLocation(loc);
+      }
+    }).catch(() => {
+      // Silently ignore if not yet configured
+    });
   }, []);
 
   const applyTheme = (newTheme) => {
@@ -89,6 +112,46 @@ export default function Settings() {
   const handleCancelEdit = () => {
     setTempPattern(idPattern);
     setIsEditingPattern(false);
+  };
+
+  const handleSaveLocation = async () => {
+    const lat = parseFloat(tempLocation.lat);
+    const lon = parseFloat(tempLocation.lon);
+    const radius = parseFloat(tempLocation.radius);
+
+    if (isNaN(lat) || lat < -90 || lat > 90) {
+      toast.error('Invalid latitude (must be between -90 and 90)');
+      return;
+    }
+    if (isNaN(lon) || lon < -180 || lon > 180) {
+      toast.error('Invalid longitude (must be between -180 and 180)');
+      return;
+    }
+    if (isNaN(radius) || radius <= 0) {
+      toast.error('Radius must be a positive number');
+      return;
+    }
+
+    setIsSavingLocation(true);
+    try {
+      const res = await api.post('/api/settings/office-location', { lat, lon, radius });
+      if (res.data.success) {
+        setOfficeLocation({ lat: String(lat), lon: String(lon), radius: String(radius) });
+        setIsEditingLocation(false);
+        toast.success('Office location saved successfully');
+      } else {
+        toast.error(res.data.message || 'Failed to save location');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to save location');
+    } finally {
+      setIsSavingLocation(false);
+    }
+  };
+
+  const handleCancelLocationEdit = () => {
+    setTempLocation(officeLocation);
+    setIsEditingLocation(false);
   };
 
   return (
@@ -222,6 +285,109 @@ export default function Settings() {
               <p className="text-xs sm:text-sm text-blue-400">
                 <strong>Note:</strong> Changes to the ID pattern will only apply to newly created employees. 
                 Existing employee IDs will not be modified.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Office Location Settings */}
+        <div className="bg-gray-900 rounded-xl border border-gray-700 p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <MapPinIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 mr-2 sm:mr-3" />
+              <h2 className="text-lg sm:text-xl font-semibold text-white">Office Location</h2>
+            </div>
+            {!isEditingLocation ? (
+              <button
+                onClick={() => setIsEditingLocation(true)}
+                className="flex items-center px-3 py-1.5 text-xs sm:text-sm bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-lg hover:bg-purple-500/20 transition-colors"
+              >
+                <PencilIcon className="w-4 h-4 mr-1.5" />
+                Edit
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSaveLocation}
+                  disabled={isSavingLocation}
+                  className="flex items-center px-3 py-1.5 text-xs sm:text-sm bg-green-500/10 text-green-400 border border-green-500/30 rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-50"
+                >
+                  <CheckIcon className="w-4 h-4 mr-1.5" />
+                  {isSavingLocation ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  onClick={handleCancelLocationEdit}
+                  disabled={isSavingLocation}
+                  className="px-3 py-1.5 text-xs sm:text-sm bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-xs sm:text-sm text-gray-400">
+              Set the office GPS coordinates. Employees with location verification enabled must be within the specified radius to use remote unlock.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">Latitude</label>
+                {isEditingLocation ? (
+                  <input
+                    type="number"
+                    step="any"
+                    value={tempLocation.lat}
+                    onChange={(e) => setTempLocation({ ...tempLocation, lat: e.target.value })}
+                    placeholder="e.g. 22.5726"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                ) : (
+                  <div className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg">
+                    <code className="text-purple-400 font-mono text-sm">{officeLocation.lat || 'Not set'}</code>
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">Longitude</label>
+                {isEditingLocation ? (
+                  <input
+                    type="number"
+                    step="any"
+                    value={tempLocation.lon}
+                    onChange={(e) => setTempLocation({ ...tempLocation, lon: e.target.value })}
+                    placeholder="e.g. 88.3639"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                ) : (
+                  <div className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg">
+                    <code className="text-purple-400 font-mono text-sm">{officeLocation.lon || 'Not set'}</code>
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">Radius (metres)</label>
+                {isEditingLocation ? (
+                  <input
+                    type="number"
+                    min="1"
+                    value={tempLocation.radius}
+                    onChange={(e) => setTempLocation({ ...tempLocation, radius: e.target.value })}
+                    placeholder="e.g. 100"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                ) : (
+                  <div className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg">
+                    <code className="text-purple-400 font-mono text-sm">{officeLocation.radius ? `${officeLocation.radius} m` : 'Not set'}</code>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 sm:p-4">
+              <p className="text-xs sm:text-sm text-blue-400">
+                <strong>Note:</strong> Location verification applies only to employees with the &quot;Require Location Check&quot; option enabled. Admin users are never restricted by location.
               </p>
             </div>
           </div>
