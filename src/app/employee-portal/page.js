@@ -56,7 +56,7 @@ function getInitials(name) {
 
 export default function EmployeePortal() {
   const { user, logout, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('access');
   const [isUnlocking, setIsUnlocking] = useState(false);
   const router = useRouter();
 
@@ -335,11 +335,6 @@ export default function EmployeePortal() {
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
-  const tabs = [
-    { id: 'profile', label: 'My Profile', icon: UserCircleIcon },
-    { id: 'access', label: 'Door Access', icon: LockOpenIcon },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-950">
       {/* ── Sticky top bar ───────────────────────────────────────────────── */}
@@ -371,37 +366,39 @@ export default function EmployeePortal() {
           {/* decorative glow */}
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="flex items-center gap-4">
-            {/* Avatar */}
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-xl font-bold shadow-lg shrink-0">
+            {/* Avatar — tap to open profile */}
+            <button
+              onClick={() => setActiveTab(activeTab === 'profile' ? 'access' : 'profile')}
+              title={activeTab === 'profile' ? 'Back to Door Access' : 'View profile'}
+              className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-xl font-bold shadow-lg shrink-0 hover:ring-2 hover:ring-purple-400 transition-all focus:outline-none focus:ring-2 focus:ring-purple-400"
+            >
               {getInitials(user?.name)}
-            </div>
-            <div className="min-w-0">
+            </button>
+            <div className="min-w-0 flex-1">
               <h1 className="text-lg font-bold text-white truncate">{user?.name || 'Employee'}</h1>
               <p className="text-sm text-purple-300 truncate">{user?.role || ''}</p>
               <span className="inline-block mt-1 px-2 py-0.5 text-xs font-mono bg-gray-800 border border-gray-700 text-gray-300 rounded-md">
                 {user?.id}
               </span>
             </div>
+            {/* Avatar hint */}
+            <div className="shrink-0 text-right">
+              <p className="text-xs text-gray-500">Click avatar</p>
+              <p className="text-xs text-gray-500">for profile</p>
+            </div>
           </div>
         </motion.div>
 
-        {/* ── Tab navigation ────────────────────────────────────────────── */}
-        <div className="flex gap-1 p-1 bg-gray-900 border border-gray-800 rounded-xl">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-purple-600 text-white shadow'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        {/* ── Back to Door Access (shown only in profile view) ──────────── */}
+        {activeTab === 'profile' && (
+          <button
+            onClick={() => setActiveTab('access')}
+            className="flex items-center gap-1.5 text-sm text-purple-400 hover:text-purple-300 transition"
+          >
+            <LockOpenIcon className="w-4 h-4" />
+            ← Back to Door Access
+          </button>
+        )}
 
         {/* ── Tab content ───────────────────────────────────────────────── */}
         <AnimatePresence mode="wait">
