@@ -147,8 +147,7 @@ export default function EmployeePortal() {
   const requiresLocationCheck = user?.requireLocationCheck ?? false;
   const unlockDisabled =
     isUnlocking ||
-    (requiresLocationCheck &&
-      (locationError !== null || (distance !== null && !isWithinRange)));
+    (requiresLocationCheck && !isWithinRange);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleRemoteUnlock = async () => {
@@ -587,7 +586,9 @@ export default function EmployeePortal() {
                       <LockClosedIcon className="w-5 h-5" />
                       {requiresLocationCheck && locationError
                         ? 'Location Required'
-                        : requiresLocationCheck && distance !== null && !isWithinRange
+                        : requiresLocationCheck && distance === null
+                        ? 'Acquiring Location…'
+                        : requiresLocationCheck && !isWithinRange
                         ? 'Out of Range'
                         : 'Unlock Door'}
                     </span>
