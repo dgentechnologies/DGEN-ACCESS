@@ -67,6 +67,7 @@ async function initializeDefaultUsers() {
         role: 'Superuser / Admin',
         status: 'Active',
         isSuperAdmin: true,
+        isAdmin: true,
         createdAt: new Date().toISOString()
       },
       {
@@ -74,7 +75,8 @@ async function initializeDefaultUsers() {
         name: 'Tirthankar Dasgupta',
         role: 'CEO & CTO',
         status: 'Active',
-        isSuperAdmin: true,
+        isSuperAdmin: false,
+        isAdmin: false,
         createdAt: new Date().toISOString()
       },
       {
@@ -82,7 +84,8 @@ async function initializeDefaultUsers() {
         name: 'Sukomal Debnath',
         role: 'CFO',
         status: 'Active',
-        isSuperAdmin: true,
+        isSuperAdmin: false,
+        isAdmin: false,
         createdAt: new Date().toISOString()
       },
       {
@@ -90,7 +93,8 @@ async function initializeDefaultUsers() {
         name: 'Arpan Bairagi',
         role: 'COO',
         status: 'Active',
-        isSuperAdmin: true,
+        isSuperAdmin: false,
+        isAdmin: false,
         createdAt: new Date().toISOString()
       },
       {
@@ -98,7 +102,8 @@ async function initializeDefaultUsers() {
         name: 'Sagnik Mandal',
         role: 'CMO',
         status: 'Active',
-        isSuperAdmin: true,
+        isSuperAdmin: false,
+        isAdmin: false,
         createdAt: new Date().toISOString()
       }
     ];

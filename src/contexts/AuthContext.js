@@ -69,7 +69,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isAdmin = () => {
-    return user?.isAdmin === true || user?.isSuperAdmin === true;
+    // Only DGEN-ADM-00000 is the admin
+    return user?.id === 'DGEN-ADM-00000';
   };
 
   const value = {
