@@ -12,27 +12,6 @@ export function isAdminUser(employeeId) {
 }
 
 /**
- * Extract employee ID from request headers or body
- * Returns null if not found
- */
-export async function getEmployeeIdFromRequest(request) {
-  try {
-    // Try to get from Authorization header
-    const authHeader = request.headers.get('Authorization');
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      // If using bearer token, parse it
-      // For now, we'll just check the body
-    }
-    
-    // Try to get from request body
-    const body = await request.json().catch(() => ({}));
-    return body.employeeId || body.userId || null;
-  } catch (error) {
-    return null;
-  }
-}
-
-/**
  * Validate that the request is from an admin user
  * Returns an error response if not authorized
  */
