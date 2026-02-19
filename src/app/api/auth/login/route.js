@@ -68,14 +68,20 @@ export async function POST(request) {
     } else {
       // Regular employee: password is DOB in DDMMYYYY format
       if (userData.dob) {
-        // Convert DOB to DDMMYYYY format
-        const dobDate = new Date(userData.dob);
-        if (!isNaN(dobDate.getTime())) {
-          const day = String(dobDate.getDate()).padStart(2, '0');
-          const month = String(dobDate.getMonth() + 1).padStart(2, '0');
-          const year = dobDate.getFullYear();
+        // Parse date string directly to avoid timezone issues
+        // Expected format: YYYY-MM-DD or ISO date string
+        const dobString = String(userData.dob);
+        const dateParts = dobString.split('T')[0].split('-'); // Get YYYY-MM-DD part
+        
+        if (dateParts.length === 3) {
+          const year = dateParts[0];
+          const month = dateParts[1].padStart(2, '0');
+          const day = dateParts[2].padStart(2, '0');
           const expectedPassword = `${day}${month}${year}`;
           isPasswordValid = password === expectedPassword;
+        } else {
+          // Fallback: if date format is unexpected, use employee ID
+          isPasswordValid = password === employeeId;
         }
       } else {
         // Fallback: if no DOB set, use employee ID (for backward compatibility)
