@@ -5,6 +5,7 @@
 **📚 Documentation:**
 - ⚡ [Quick Start](QUICKSTART.md) - Get running in 5 minutes
 - 📖 [Setup Guide](SETUP.md) - Detailed setup instructions
+- 🔐 [Authentication Guide](AUTHENTICATION.md) - User authentication and roles
 - 🚀 [Deployment Guide](DEPLOYMENT.md) - Deploy to production
 - 🔧 [Troubleshooting](TROUBLESHOOTING.md) - Common issues & solutions
 - 📝 [Changelog](CHANGELOG.md) - What's new
