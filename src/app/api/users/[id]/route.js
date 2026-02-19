@@ -17,7 +17,7 @@ export async function PUT(request, context) {
     const params = await context.params;
     const userId = params.id;
     const body = await request.json();
-    const { name, role, email, mobile, dob, address, emergencyContact, isAdmin } = body;
+    const { name, role, email, mobile, dob, address, emergencyContact, isAdmin, requireLocationCheck } = body;
 
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
@@ -68,6 +68,7 @@ export async function PUT(request, context) {
     // NOTE: No authorization check - assumes API caller is authenticated admin
     // Consider adding server-side session validation for production
     if (isAdmin !== undefined) updates.isAdmin = isAdmin === true;
+    if (requireLocationCheck !== undefined) updates.requireLocationCheck = requireLocationCheck === true;
 
     await userRef.update(updates);
 
