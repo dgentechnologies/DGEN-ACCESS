@@ -65,7 +65,9 @@ export async function PUT(request, context) {
     if (dob !== undefined) updates.dob = dob || '';
     if (address !== undefined) updates.address = address ? address.trim() : '';
     if (emergencyContact !== undefined) updates.emergencyContact = emergencyContact ? emergencyContact.trim() : '';
-    if (isAdmin !== undefined) updates.isAdmin = isAdmin || false;
+    // NOTE: No authorization check - assumes API caller is authenticated admin
+    // Consider adding server-side session validation for production
+    if (isAdmin !== undefined) updates.isAdmin = isAdmin === true;
 
     await userRef.update(updates);
 

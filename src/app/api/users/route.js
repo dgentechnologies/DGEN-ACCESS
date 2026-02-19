@@ -101,11 +101,13 @@ export async function POST(request) {
 
     // Create new user
     // Allow admin creation based on checkbox
+    // NOTE: No authorization check - assumes API caller is authenticated admin
+    // Consider adding server-side session validation for production
     const newUser = {
       name: name.trim(),
       role: role.trim(),
       status: 'Active',
-      isAdmin: isAdmin || false,
+      isAdmin: isAdmin === true,
       isSuperAdmin: false,
       createdAt: new Date().toISOString()
     };
