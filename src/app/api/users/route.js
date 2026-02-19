@@ -100,12 +100,12 @@ export async function POST(request) {
     }
 
     // Create new user
-    // Only DGEN-ADM-00000 can be admin, prevent creating new admins
+    // Allow admin creation based on checkbox
     const newUser = {
       name: name.trim(),
       role: role.trim(),
       status: 'Active',
-      isAdmin: false,
+      isAdmin: isAdmin || false,
       isSuperAdmin: false,
       createdAt: new Date().toISOString()
     };

@@ -138,6 +138,7 @@ export default function Employees() {
     dob: '',
     address: '',
     emergencyContact: '',
+    isAdmin: false,
   });
   
   // Filter and search states
@@ -251,11 +252,12 @@ export default function Employees() {
         dob: editFormData.dob,
         address: editFormData.address,
         emergencyContact: editFormData.emergencyContact,
+        isAdmin: editFormData.isAdmin,
       });
       if (response.success) {
         toast.success('Employee updated successfully');
         setShowEditModal(false);
-        setEditFormData({ id: '', name: '', role: '', department: '', status: '', email: '', mobile: '', dob: '', address: '', emergencyContact: '' });
+        setEditFormData({ id: '', name: '', role: '', department: '', status: '', email: '', mobile: '', dob: '', address: '', emergencyContact: '', isAdmin: false });
         fetchUsers();
       }
     } catch (error) {
@@ -276,6 +278,7 @@ export default function Employees() {
       dob: user.dob || '',
       address: user.address || '',
       emergencyContact: user.emergencyContact || '',
+      isAdmin: user.isAdmin || false,
     });
     setShowEditModal(true);
   };
@@ -1205,6 +1208,28 @@ export default function Employees() {
                     <p className="mt-1 text-xs text-gray-500">
                       Department cannot be changed. Create a new employee to assign a different department.
                     </p>
+                  </div>
+
+                  {/* Admin Access Toggle */}
+                  <div className="border-t border-gray-700 pt-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-3">
+                      Administrator Access
+                    </label>
+                    <div className="flex items-center p-4 bg-gray-800 rounded-lg border border-gray-700">
+                      <input
+                        type="checkbox"
+                        id="isAdminEdit"
+                        checked={editFormData.isAdmin}
+                        onChange={(e) => setEditFormData({ ...editFormData, isAdmin: e.target.checked })}
+                        className="w-5 h-5 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500 focus:ring-2"
+                      />
+                      <label htmlFor="isAdminEdit" className="ml-3 flex-1">
+                        <div className="text-sm font-medium text-white">Grant Administrator Access</div>
+                        <div className="text-xs text-gray-400">
+                          Allow full access to dashboard, employee management, and all admin features
+                        </div>
+                      </label>
+                    </div>
                   </div>
 
                   {/* Status Toggle */}

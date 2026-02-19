@@ -68,17 +68,15 @@ export async function POST(request) {
     }
 
     // Successful login
-    // Only DGEN-ADM-00000 is the admin
-    const isAdminUser = employeeId === 'DGEN-ADM-00000';
-    
+    // Use isAdmin flag from database
     const user = {
       id: employeeId,
       name: userData.name,
       role: userData.role,
       department: userData.department,
       status: userData.status,
-      isAdmin: isAdminUser,
-      isSuperAdmin: isAdminUser,
+      isAdmin: userData.isAdmin || false,
+      isSuperAdmin: userData.isSuperAdmin || false,
     };
 
     return NextResponse.json({

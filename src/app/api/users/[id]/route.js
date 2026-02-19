@@ -17,7 +17,7 @@ export async function PUT(request, context) {
     const params = await context.params;
     const userId = params.id;
     const body = await request.json();
-    const { name, role, email, mobile, dob, address, emergencyContact } = body;
+    const { name, role, email, mobile, dob, address, emergencyContact, isAdmin } = body;
 
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
@@ -65,6 +65,7 @@ export async function PUT(request, context) {
     if (dob !== undefined) updates.dob = dob || '';
     if (address !== undefined) updates.address = address ? address.trim() : '';
     if (emergencyContact !== undefined) updates.emergencyContact = emergencyContact ? emergencyContact.trim() : '';
+    if (isAdmin !== undefined) updates.isAdmin = isAdmin || false;
 
     await userRef.update(updates);
 
