@@ -267,11 +267,24 @@ void triggerUnlock() {
 
 ## 🔐 Security Notes
 
+### ⚠️ IMPORTANT: Development Authentication
+**This implementation uses simplified authentication for demonstration purposes. DO NOT use in production without implementing proper security:**
+
+- **Current Implementation**: Password is the same as employee ID (INSECURE)
+- **Required for Production**:
+  - Implement password hashing (bcrypt, argon2, or similar)
+  - Store hashed passwords in database
+  - Require strong, unique passwords during account creation
+  - Use secure session tokens instead of localStorage
+  - Implement HTTP-only cookies for session management
+  - Add rate limiting on login attempts
+  - Enable two-factor authentication (2FA)
+
+### Current Security Features
 - **Authentication Required**: All pages except login require user authentication
 - **Role-Based Access**: Admin features are restricted to users with admin privileges
-- **Password Security**: Default password is employee ID (should be changed in production)
-- **Session Management**: User sessions are stored in localStorage with automatic validation
-- **Firebase Security**: Credentials are stored securely in environment variables
+- **Session Management**: Basic session management with localStorage validation
+- **Firebase Security**: Server credentials are stored securely in environment variables
 - **API Security**: API routes use Firebase Admin SDK for server-side operations
 - **Audit Trail**: All remote unlock actions are logged with employee ID for accountability
 

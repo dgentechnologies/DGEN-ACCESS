@@ -21,7 +21,8 @@ export const AuthProvider = ({ children }) => {
   const router = useRouter();
 
   useEffect(() => {
-    // Check for existing session
+    // SECURITY NOTE: Using localStorage for session management is not recommended for production
+    // Consider using secure HTTP-only cookies with server-side session validation
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {

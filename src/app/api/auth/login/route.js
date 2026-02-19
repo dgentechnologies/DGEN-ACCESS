@@ -53,7 +53,10 @@ export async function POST(request) {
       );
     }
 
-    // Verify password (password is the employee ID)
+    // SECURITY WARNING: This is a simplified authentication for demonstration
+    // In production, implement proper password hashing with bcrypt/argon2
+    // and store hashed passwords in the database
+    // Verify password (currently password is the employee ID)
     if (password !== employeeId) {
       return NextResponse.json(
         {
