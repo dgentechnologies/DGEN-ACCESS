@@ -126,6 +126,11 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+              <p className="mt-2 text-xs text-gray-400">
+                For employees: Use your date of birth (DDMMYYYY format, e.g., 15011990)
+                <br />
+                For admins: Use your employee ID
+              </p>
             </div>
 
             {/* Submit Button */}

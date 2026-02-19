@@ -56,8 +56,34 @@ export async function POST(request) {
     // SECURITY WARNING: This is a simplified authentication for demonstration
     // In production, implement proper password hashing with bcrypt/argon2
     // and store hashed passwords in the database
-    // Verify password (currently password is the employee ID)
-    if (password !== employeeId) {
+    
+    // Verify password based on user type:
+    // - Admin users: password is employee ID
+    // - Regular employees: password is date of birth in DDMMYYYY format
+    let isPasswordValid = false;
+    
+    if (userData.isAdmin || userData.isSuperAdmin) {
+      // Admin: password is employee ID
+      isPasswordValid = password === employeeId;
+    } else {
+      // Regular employee: password is DOB in DDMMYYYY format
+      if (userData.dob) {
+        // Convert DOB to DDMMYYYY format
+        const dobDate = new Date(userData.dob);
+        if (!isNaN(dobDate.getTime())) {
+          const day = String(dobDate.getDate()).padStart(2, '0');
+          const month = String(dobDate.getMonth() + 1).padStart(2, '0');
+          const year = dobDate.getFullYear();
+          const expectedPassword = `${day}${month}${year}`;
+          isPasswordValid = password === expectedPassword;
+        }
+      } else {
+        // Fallback: if no DOB set, use employee ID (for backward compatibility)
+        isPasswordValid = password === employeeId;
+      }
+    }
+    
+    if (!isPasswordValid) {
       return NextResponse.json(
         {
           success: false,
