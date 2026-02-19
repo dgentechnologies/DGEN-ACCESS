@@ -52,7 +52,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { id, name, role, department, isAdmin } = body;
+    const { id, name, role, department, isAdmin, email, mobile, dob, address, emergencyContact } = body;
 
     // Validation
     if (!id || !name || !role) {
@@ -60,6 +60,28 @@ export async function POST(request) {
         {
           success: false,
           message: 'All fields (id, name, role) are required'
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format if provided
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid email format'
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate mobile format if provided (basic check for 10+ digits)
+    if (mobile && !/^\+?[\d\s\-()]{10,}$/.test(mobile)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid mobile number format'
         },
         { status: 400 }
       );
@@ -88,10 +110,13 @@ export async function POST(request) {
       createdAt: new Date().toISOString()
     };
 
-    // Add department if provided
-    if (department) {
-      newUser.department = department;
-    }
+    // Add optional fields if provided
+    if (department) newUser.department = department;
+    if (email) newUser.email = email.trim();
+    if (mobile) newUser.mobile = mobile.trim();
+    if (dob) newUser.dob = dob;
+    if (address) newUser.address = address.trim();
+    if (emergencyContact) newUser.emergencyContact = emergencyContact.trim();
 
     await db.collection('users').doc(id).set(newUser);
 

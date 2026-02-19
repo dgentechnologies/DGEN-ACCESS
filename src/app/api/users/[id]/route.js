@@ -17,7 +17,7 @@ export async function PUT(request, context) {
     const params = await context.params;
     const userId = params.id;
     const body = await request.json();
-    const { name, role } = body;
+    const { name, role, email, mobile, dob, address, emergencyContact } = body;
 
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
@@ -32,12 +32,39 @@ export async function PUT(request, context) {
       );
     }
 
+    // Validate email format if provided
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid email format'
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate mobile format if provided
+    if (mobile && !/^\+?[\d\s\-()]{10,}$/.test(mobile)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid mobile number format'
+        },
+        { status: 400 }
+      );
+    }
+
     const updates = {
       updatedAt: new Date().toISOString()
     };
 
     if (name) updates.name = name.trim();
     if (role) updates.role = role.trim();
+    if (email !== undefined) updates.email = email ? email.trim() : '';
+    if (mobile !== undefined) updates.mobile = mobile ? mobile.trim() : '';
+    if (dob !== undefined) updates.dob = dob || '';
+    if (address !== undefined) updates.address = address ? address.trim() : '';
+    if (emergencyContact !== undefined) updates.emergencyContact = emergencyContact ? emergencyContact.trim() : '';
 
     await userRef.update(updates);
 

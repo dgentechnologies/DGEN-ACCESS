@@ -13,6 +13,11 @@ import {
   ShieldCheckIcon,
   BriefcaseIcon,
   BuildingOfficeIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  CakeIcon,
+  MapPinIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
 export default function EmployeePortal() {
@@ -135,6 +140,61 @@ export default function EmployeePortal() {
                 <div>
                   <p className="text-sm text-gray-400">Department</p>
                   <p className="text-white font-medium">{user.department}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Email */}
+            {user?.email && (
+              <div className="flex items-center p-4 bg-gray-800 rounded-lg">
+                <EnvelopeIcon className="w-6 h-6 text-purple-400 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-400">Email</p>
+                  <p className="text-white font-medium">{user.email}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Mobile */}
+            {user?.mobile && (
+              <div className="flex items-center p-4 bg-gray-800 rounded-lg">
+                <PhoneIcon className="w-6 h-6 text-purple-400 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-400">Mobile Number</p>
+                  <p className="text-white font-medium">{user.mobile}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Date of Birth */}
+            {user?.dob && (
+              <div className="flex items-center p-4 bg-gray-800 rounded-lg">
+                <CakeIcon className="w-6 h-6 text-purple-400 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-400">Date of Birth</p>
+                  <p className="text-white font-medium">{new Date(user.dob).toLocaleDateString()}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Address */}
+            {user?.address && (
+              <div className="flex items-center p-4 bg-gray-800 rounded-lg">
+                <MapPinIcon className="w-6 h-6 text-purple-400 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-400">Address</p>
+                  <p className="text-white font-medium">{user.address}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Emergency Contact */}
+            {user?.emergencyContact && (
+              <div className="flex items-center p-4 bg-gray-800 rounded-lg">
+                <ExclamationTriangleIcon className="w-6 h-6 text-purple-400 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-400">Emergency Contact</p>
+                  <p className="text-white font-medium">{user.emergencyContact}</p>
                 </div>
               </div>
             )}
