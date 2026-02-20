@@ -1,6 +1,56 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebaseAdmin';
 
+export async function GET(request, context) {
+  try {
+    if (!db) {
+      return NextResponse.json(
+        { success: false, message: 'Firebase not configured' },
+        { status: 503 }
+      );
+    }
+
+    const params = await context.params;
+    const userId = params.id;
+    const userDoc = await db.collection('users').doc(userId).get();
+
+    if (!userDoc.exists) {
+      return NextResponse.json(
+        { success: false, message: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    const userData = userDoc.data();
+    // NOTE: No authorization check - assumes API caller is the authenticated employee
+    // or an admin. Consider adding server-side session validation for production.
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: userId,
+        name: userData.name || '',
+        role: userData.role || '',
+        department: userData.department || '',
+        status: userData.status || '',
+        email: userData.email || '',
+        mobile: userData.mobile || '',
+        dob: userData.dob || '',
+        address: userData.address || '',
+        emergencyContact: userData.emergencyContact || '',
+        isAdmin: userData.isAdmin || false,
+        isSuperAdmin: userData.isSuperAdmin || false,
+        requireLocationCheck: userData.requireLocationCheck || false,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PUT(request, context) {
   try {
     if (!db) {

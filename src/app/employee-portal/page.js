@@ -76,6 +76,10 @@ export default function EmployeePortal() {
   const [showNewPw, setShowNewPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
 
+  // Profile data fetched fresh from the server
+  const [profileData, setProfileData] = useState(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
@@ -120,6 +124,21 @@ export default function EmployeePortal() {
     const interval = setInterval(fetchUserLocation, 30000);
     return () => clearInterval(interval);
   }, [fetchUserLocation]);
+
+  // Fetch fresh profile data whenever the profile tab is opened
+  useEffect(() => {
+    if (activeTab !== 'profile' || !user?.id) return;
+    setIsLoadingProfile(true);
+    api
+      .get(`/api/users/${user.id}`)
+      .then((res) => {
+        if (res.data.success) setProfileData(res.data.data);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch profile data:', err);
+      })
+      .finally(() => setIsLoadingProfile(false));
+  }, [activeTab, user?.id]);
 
   // Calculate distance whenever location updates
   useEffect(() => {
@@ -334,6 +353,7 @@ export default function EmployeePortal() {
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
+  const displayProfile = profileData ?? user;
   return (
     <div className="min-h-screen bg-gray-950">
       {/* ── Sticky top bar ───────────────────────────────────────────────── */}
@@ -412,44 +432,59 @@ export default function EmployeePortal() {
             >
               {/* Profile info card */}
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-lg">
-                <h2 className="text-sm font-semibold text-gray-300 mb-4 uppercase tracking-wider">
-                  Profile Information
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <InfoRow icon={UserCircleIcon} label="Full Name" value={user?.name} />
-                  <InfoRow icon={BriefcaseIcon} label="Role" value={user?.role} />
-                  <InfoRow icon={BuildingOfficeIcon} label="Department" value={user?.department} />
-                  <InfoRow icon={EnvelopeIcon} label="Email" value={user?.email} />
-                  <InfoRow icon={PhoneIcon} label="Mobile" value={user?.mobile} />
-                  <InfoRow
-                    icon={CakeIcon}
-                    label="Date of Birth"
-                    value={
-                      user?.dob
-                        ? (() => {
-                            try {
-                              const d = new Date(user.dob);
-                              return isNaN(d.getTime())
-                                ? user.dob
-                                : d.toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                  });
-                            } catch {
-                              return user.dob;
-                            }
-                          })()
-                        : null
-                    }
-                  />
-                  <InfoRow icon={MapPinIcon} label="Address" value={user?.address} />
-                  <InfoRow
-                    icon={ExclamationTriangleIcon}
-                    label="Emergency Contact"
-                    value={user?.emergencyContact}
-                  />
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
+                    Profile Information
+                  </h2>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-800 border border-gray-700 rounded-lg">
+                    <LockClosedIcon className="w-3.5 h-3.5 text-gray-400" />
+                    <span className="text-xs text-gray-400">Admin managed</span>
+                  </div>
                 </div>
+                {isLoadingProfile ? (
+                  <div className="flex items-center justify-center py-8">
+                    <ArrowPathIcon className="w-5 h-5 animate-spin text-purple-400" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <InfoRow icon={UserCircleIcon} label="Full Name" value={displayProfile?.name} />
+                    <InfoRow icon={BriefcaseIcon} label="Role" value={displayProfile?.role} />
+                    <InfoRow icon={BuildingOfficeIcon} label="Department" value={displayProfile?.department} />
+                    <InfoRow icon={EnvelopeIcon} label="Email" value={displayProfile?.email} />
+                    <InfoRow icon={PhoneIcon} label="Mobile" value={displayProfile?.mobile} />
+                    <InfoRow
+                      icon={CakeIcon}
+                      label="Date of Birth"
+                      value={
+                        displayProfile?.dob
+                          ? (() => {
+                              try {
+                                const d = new Date(displayProfile.dob);
+                                return isNaN(d.getTime())
+                                  ? displayProfile.dob
+                                  : d.toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                    });
+                              } catch {
+                                return displayProfile.dob;
+                              }
+                            })()
+                          : null
+                      }
+                    />
+                    <InfoRow icon={MapPinIcon} label="Address" value={displayProfile?.address} />
+                    <InfoRow
+                      icon={ExclamationTriangleIcon}
+                      label="Emergency Contact"
+                      value={displayProfile?.emergencyContact}
+                    />
+                  </div>
+                )}
+                <p className="mt-4 text-xs text-gray-500 text-center">
+                  These details are managed by your administrator and cannot be edited here.
+                </p>
               </div>
 
               {/* Change password card */}
