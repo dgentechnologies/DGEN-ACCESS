@@ -22,6 +22,9 @@ import {
   MagnifyingGlassIcon,
   FunnelIcon,
   XMarkIcon,
+  AcademicCapIcon,
+  IdentificationIcon,
+  WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import LayoutWrapper from '@/components/LayoutWrapper';
 
@@ -98,6 +101,33 @@ const DEPARTMENTS = [
     color: 'bg-cyan-500',
     textColor: 'text-cyan-400',
     bgColor: 'bg-cyan-500/20',
+  },
+  {
+    name: 'Internships',
+    code: 'INT',
+    focusAreas: 'Temporary student developers or engineers',
+    icon: AcademicCapIcon,
+    color: 'bg-indigo-500',
+    textColor: 'text-indigo-400',
+    bgColor: 'bg-indigo-500/20',
+  },
+  {
+    name: 'Guests',
+    code: 'GST',
+    focusAreas: 'One-time visitors, investors, or partners',
+    icon: IdentificationIcon,
+    color: 'bg-teal-500',
+    textColor: 'text-teal-400',
+    bgColor: 'bg-teal-500/20',
+  },
+  {
+    name: 'Contractors',
+    code: 'CON',
+    focusAreas: 'External vendors or freelance workers',
+    icon: WrenchScrewdriverIcon,
+    color: 'bg-amber-500',
+    textColor: 'text-amber-400',
+    bgColor: 'bg-amber-500/20',
   },
 ];
 
