@@ -25,6 +25,14 @@ import {
   AcademicCapIcon,
   IdentificationIcon,
   WrenchScrewdriverIcon,
+  EyeIcon,
+  DocumentDuplicateIcon,
+  CheckIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  CalendarDaysIcon,
+  MapPinIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import LayoutWrapper from '@/components/LayoutWrapper';
 
@@ -145,6 +153,9 @@ export default function Employees() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewUser, setViewUser] = useState(null);
+  const [rfidCopied, setRfidCopied] = useState(false);
   const [formData, setFormData] = useState({
     id: '',
     name: '',
@@ -152,7 +163,7 @@ export default function Employees() {
     department: '',
     isAdmin: false,
     email: '',
-    mobile: '',
+    mobile: '+91 ',
     dob: '',
     address: '',
     emergencyContact: '',
@@ -164,7 +175,7 @@ export default function Employees() {
     department: '',
     status: '',
     email: '',
-    mobile: '',
+    mobile: '+91 ',
     dob: '',
     address: '',
     emergencyContact: '',
@@ -264,7 +275,7 @@ export default function Employees() {
       if (response.success) {
         toast.success('Employee added successfully');
         setShowAddModal(false);
-        setFormData({ id: '', name: '', role: '', department: '', isAdmin: false, email: '', mobile: '', dob: '', address: '', emergencyContact: '' });
+        setFormData({ id: '', name: '', role: '', department: '', isAdmin: false, email: '', mobile: '+91 ', dob: '', address: '', emergencyContact: '' });
         fetchUsers();
       }
     } catch (error) {
@@ -289,7 +300,7 @@ export default function Employees() {
       if (response.success) {
         toast.success('Employee updated successfully');
         setShowEditModal(false);
-        setEditFormData({ id: '', name: '', role: '', department: '', status: '', email: '', mobile: '', dob: '', address: '', emergencyContact: '', isAdmin: false, requireLocationCheck: false });
+        setEditFormData({ id: '', name: '', role: '', department: '', status: '', email: '', mobile: '+91 ', dob: '', address: '', emergencyContact: '', isAdmin: false, requireLocationCheck: false });
         fetchUsers();
       }
     } catch (error) {
@@ -306,13 +317,14 @@ export default function Employees() {
       department: deptCode,
       status: user.status,
       email: user.email || '',
-      mobile: user.mobile || '',
+      mobile: user.mobile || '+91 ',
       dob: user.dob || '',
       address: user.address || '',
       emergencyContact: user.emergencyContact || '',
       isAdmin: user.isAdmin || false,
       requireLocationCheck: user.requireLocationCheck || false,
     });
+    setRfidCopied(false);
     setShowEditModal(true);
   };
 
@@ -350,6 +362,28 @@ export default function Employees() {
   // Check if user is Super Admin (only DGEN-ADM-00000)
   const isSuperAdmin = (userId) => {
     return userId === 'DGEN-ADM-00000';
+  };
+
+  // Generate RFID card text
+  const getRfidCardText = (name, id, role) => {
+    if (!name || !id || !role) return '';
+    return `Name: ${name} | ID: ${id} | Role: ${role}`;
+  };
+
+  // Copy RFID card text to clipboard
+  const handleCopyRfid = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setRfidCopied(true);
+      setTimeout(() => setRfidCopied(false), 2000);
+    }).catch(() => {
+      toast.error('Failed to copy to clipboard');
+    });
+  };
+
+  // Open view modal
+  const handleOpenViewModal = (user) => {
+    setViewUser(user);
+    setShowViewModal(true);
   };
 
   // Filter and sort users
@@ -707,6 +741,13 @@ export default function Employees() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex items-center justify-end space-x-2">
+                            <button
+                              onClick={() => handleOpenViewModal(user)}
+                              className="p-2 rounded-lg hover:bg-purple-500/20 text-purple-400 transition-colors"
+                              title="View Details"
+                            >
+                              <EyeIcon className="w-5 h-5" />
+                            </button>
                             {!isUserSuperAdmin && (
                               <>
                                 <button
@@ -724,11 +765,6 @@ export default function Employees() {
                                   <TrashIcon className="w-5 h-5" />
                                 </button>
                               </>
-                            )}
-                            {isUserSuperAdmin && (
-                              <span className="text-xs text-gray-500 italic px-2">
-                                Protected
-                              </span>
                             )}
                           </div>
                         </td>
@@ -823,31 +859,33 @@ export default function Employees() {
                   </div>
 
                   {/* Actions */}
-                  {!isUserSuperAdmin && (
-                    <div className="flex items-center gap-2 pt-3 border-t border-gray-700">
-                      <button
-                        onClick={() => handleOpenEditModal(user)}
-                        className="flex-1 flex items-center justify-center px-3 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors text-sm"
-                      >
-                        <PencilIcon className="w-4 h-4 mr-2" />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="flex-1 flex items-center justify-center px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors text-sm"
-                      >
-                        <TrashIcon className="w-4 h-4 mr-2" />
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                  {isUserSuperAdmin && (
-                    <div className="pt-3 border-t border-gray-700 text-center">
-                      <span className="text-xs text-gray-500 italic">
-                        Protected Account
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 pt-3 border-t border-gray-700">
+                    <button
+                      onClick={() => handleOpenViewModal(user)}
+                      className="flex-1 flex items-center justify-center px-3 py-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 transition-colors text-sm"
+                    >
+                      <EyeIcon className="w-4 h-4 mr-2" />
+                      View
+                    </button>
+                    {!isUserSuperAdmin && (
+                      <>
+                        <button
+                          onClick={() => handleOpenEditModal(user)}
+                          className="flex-1 flex items-center justify-center px-3 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors text-sm"
+                        >
+                          <PencilIcon className="w-4 h-4 mr-2" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="flex-1 flex items-center justify-center px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors text-sm"
+                        >
+                          <TrashIcon className="w-4 h-4 mr-2" />
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </motion.div>
               );
             })
@@ -986,7 +1024,7 @@ export default function Employees() {
                       value={formData.mobile}
                       onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
                       className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
-                      placeholder="+1 (555) 123-4567"
+                      placeholder="+91 XXXXX XXXXX"
                     />
                   </div>
 
@@ -1027,9 +1065,32 @@ export default function Employees() {
                       value={formData.emergencyContact}
                       onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
                       className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
-                      placeholder="Name & Phone: John Doe +1 (555) 987-6543"
+                      placeholder="Name: John Doe | Phone: +91 XXXXX XXXXX"
                     />
                   </div>
+
+                  {/* RFID Card Preview */}
+                  {getRfidCardText(formData.name, formData.id, formData.role) && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        RFID Card Data
+                      </label>
+                      <div className="relative bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-600 rounded-xl p-4 shadow-inner">
+                        <div className="absolute top-3 left-3 w-8 h-6 rounded bg-yellow-500/30 border border-yellow-500/50" />
+                        <p className="pl-11 pr-10 text-sm font-mono text-green-300 break-all leading-relaxed">
+                          {getRfidCardText(formData.name, formData.id, formData.role)}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyRfid(getRfidCardText(formData.name, formData.id, formData.role))}
+                          title="Copy RFID data"
+                          className="absolute top-3 right-3 p-1.5 rounded-lg bg-gray-600 hover:bg-gray-500 text-gray-300 hover:text-white transition-colors"
+                        >
+                          {rfidCopied ? <CheckIcon className="w-4 h-4 text-green-400" /> : <DocumentDuplicateIcon className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Admin Checkbox */}
                   <div className="flex items-center p-4 bg-gray-800 rounded-lg border border-gray-700">
@@ -1054,7 +1115,7 @@ export default function Employees() {
                       type="button"
                       onClick={() => {
                         setShowAddModal(false);
-                        setFormData({ id: '', name: '', role: '', department: '', isAdmin: false, email: '', mobile: '', dob: '', address: '', emergencyContact: '' });
+                        setFormData({ id: '', name: '', role: '', department: '', isAdmin: false, email: '', mobile: '+91 ', dob: '', address: '', emergencyContact: '' });
                       }}
                       className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                     >
@@ -1167,7 +1228,7 @@ export default function Employees() {
                       value={editFormData.mobile}
                       onChange={(e) => setEditFormData({ ...editFormData, mobile: e.target.value })}
                       className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
-                      placeholder="+1 (555) 123-4567"
+                      placeholder="+91 XXXXX XXXXX"
                     />
                   </div>
 
@@ -1208,9 +1269,32 @@ export default function Employees() {
                       value={editFormData.emergencyContact}
                       onChange={(e) => setEditFormData({ ...editFormData, emergencyContact: e.target.value })}
                       className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-purple-500 focus:outline-none"
-                      placeholder="Name & Phone: John Doe +1 (555) 987-6543"
+                      placeholder="Name: John Doe | Phone: +91 XXXXX XXXXX"
                     />
                   </div>
+
+                  {/* RFID Card Preview */}
+                  {getRfidCardText(editFormData.name, editFormData.id, editFormData.role) && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        RFID Card Data
+                      </label>
+                      <div className="relative bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-600 rounded-xl p-4 shadow-inner">
+                        <div className="absolute top-3 left-3 w-8 h-6 rounded bg-yellow-500/30 border border-yellow-500/50" />
+                        <p className="pl-11 pr-10 text-sm font-mono text-green-300 break-all leading-relaxed">
+                          {getRfidCardText(editFormData.name, editFormData.id, editFormData.role)}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyRfid(getRfidCardText(editFormData.name, editFormData.id, editFormData.role))}
+                          title="Copy RFID data"
+                          className="absolute top-3 right-3 p-1.5 rounded-lg bg-gray-600 hover:bg-gray-500 text-gray-300 hover:text-white transition-colors"
+                        >
+                          {rfidCopied ? <CheckIcon className="w-4 h-4 text-green-400" /> : <DocumentDuplicateIcon className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Department (Read-only display) */}
                   <div>
@@ -1339,7 +1423,8 @@ export default function Employees() {
                       type="button"
                       onClick={() => {
                         setShowEditModal(false);
-                        setEditFormData({ id: '', name: '', role: '', department: '', status: '', email: '', mobile: '', dob: '', address: '', emergencyContact: '' });
+                        setRfidCopied(false);
+                        setEditFormData({ id: '', name: '', role: '', department: '', status: '', email: '', mobile: '+91 ', dob: '', address: '', emergencyContact: '', isAdmin: false, requireLocationCheck: false });
                       }}
                       className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
                     >
@@ -1353,6 +1438,144 @@ export default function Employees() {
                     </button>
                   </div>
                 </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* View Employee Modal */}
+        <AnimatePresence>
+          {showViewModal && viewUser && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowViewModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-gray-900 rounded-xl border border-gray-700 p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    {(() => {
+                      const deptCode = extractDepartmentCode(viewUser.id);
+                      const dept = getDepartmentByCode(deptCode);
+                      return (
+                        <div className={`w-12 h-12 rounded-xl ${dept?.color || 'bg-purple-500'} flex items-center justify-center text-white font-bold text-lg`}>
+                          {viewUser.name?.charAt(0) || '?'}
+                        </div>
+                      );
+                    })()}
+                    <div>
+                      <h2 className="text-xl font-bold text-white">{viewUser.name}</h2>
+                      <p className="text-sm font-mono text-gray-400">{viewUser.id}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowViewModal(false)}
+                    className="p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* RFID Card */}
+                {getRfidCardText(viewUser.name, viewUser.id, viewUser.role) && (
+                  <div className="mb-5">
+                    <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">RFID Card Data</p>
+                    <div className="relative bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-600 rounded-xl p-4 shadow-inner">
+                      <div className="absolute top-3 left-3 w-8 h-6 rounded bg-yellow-500/30 border border-yellow-500/50" />
+                      <p className="pl-11 pr-10 text-sm font-mono text-green-300 break-all leading-relaxed">
+                        {getRfidCardText(viewUser.name, viewUser.id, viewUser.role)}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyRfid(getRfidCardText(viewUser.name, viewUser.id, viewUser.role))}
+                        title="Copy RFID data"
+                        className="absolute top-3 right-3 p-1.5 rounded-lg bg-gray-600 hover:bg-gray-500 text-gray-300 hover:text-white transition-colors"
+                      >
+                        {rfidCopied ? <CheckIcon className="w-4 h-4 text-green-400" /> : <DocumentDuplicateIcon className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Details */}
+                <div className="space-y-2">
+                  {[
+                    { icon: BriefcaseIcon, label: 'Role', value: viewUser.role },
+                    {
+                      icon: ShieldCheckIcon,
+                      label: 'Department',
+                      value: (() => {
+                        const deptCode = extractDepartmentCode(viewUser.id);
+                        return getDepartmentByCode(deptCode)?.name || deptCode || '—';
+                      })(),
+                    },
+                    {
+                      icon: viewUser.status === 'Active' ? LockOpenIcon : LockClosedIcon,
+                      label: 'Status',
+                      value: viewUser.status,
+                      badge: viewUser.status === 'Active' ? 'green' : 'red',
+                    },
+                    { icon: EnvelopeIcon, label: 'Email', value: viewUser.email },
+                    { icon: PhoneIcon, label: 'Mobile', value: viewUser.mobile },
+                    {
+                      icon: CalendarDaysIcon,
+                      label: 'Date of Birth',
+                      value: viewUser.dob
+                        ? (() => {
+                            try {
+                              const d = new Date(viewUser.dob);
+                              return isNaN(d.getTime()) ? viewUser.dob : d.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+                            } catch {
+                              return viewUser.dob;
+                            }
+                          })()
+                        : null,
+                    },
+                    { icon: MapPinIcon, label: 'Address', value: viewUser.address },
+                    { icon: ExclamationTriangleIcon, label: 'Emergency Contact', value: viewUser.emergencyContact },
+                    { icon: LockClosedIcon, label: 'Admin Access', value: viewUser.isAdmin ? 'Yes' : 'No' },
+                    { icon: MapPinIcon, label: 'Location Check Required', value: viewUser.requireLocationCheck ? 'Yes' : 'No' },
+                  ]
+                    .filter((row) => row.value)
+                    .map((row) => {
+                      const RowIcon = row.icon;
+                      return (
+                        <div key={row.label} className="flex items-start gap-3 p-3 rounded-xl bg-gray-800/60 border border-gray-700/50">
+                          <div className="p-1.5 rounded-lg bg-purple-500/10 shrink-0">
+                            <RowIcon className="w-4 h-4 text-purple-400" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-gray-400 mb-0.5">{row.label}</p>
+                            {row.badge ? (
+                              <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full ${row.badge === 'green' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                {row.value}
+                              </span>
+                            ) : (
+                              <p className="text-sm text-white font-medium break-words">{row.value}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+
+                <div className="mt-5 text-center">
+                  <button
+                    onClick={() => setShowViewModal(false)}
+                    className="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-sm"
+                  >
+                    Close
+                  </button>
+                </div>
               </motion.div>
             </motion.div>
           )}
