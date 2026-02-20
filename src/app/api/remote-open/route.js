@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebaseAdmin';
-import { setUnlockRequested } from '@/lib/remoteUnlockState';
+
+const REMOTE_UNLOCK_PATH = { collection: 'settings', doc: 'remoteUnlock' };
 
 /**
  * Calculates the distance in metres between two lat/lon coordinates
@@ -76,8 +77,13 @@ export async function POST(request) {
       }
     }
 
-    // Set the flag to true
-    setUnlockRequested(true);
+    // Set the unlock flag in Firestore so all instances (including the poll endpoint) can see it
+    if (db) {
+      await db.collection(REMOTE_UNLOCK_PATH.collection).doc(REMOTE_UNLOCK_PATH.doc).set(
+        { requested: true },
+        { merge: true }
+      );
+    }
     
     // Log the manual unlock action with employee ID
     const timestamp = new Date().toISOString();
