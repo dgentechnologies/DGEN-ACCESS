@@ -33,11 +33,19 @@ try {
     };
 
     app = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: process.env.FIREBASE_DATABASE_URL
     });
 
     // Firestore database instance
     db = admin.firestore();
+
+    // Log Realtime Database status
+    if (process.env.FIREBASE_DATABASE_URL) {
+      console.log('✓ Realtime Database URL:', process.env.FIREBASE_DATABASE_URL);
+    } else {
+      console.warn('⚠️  FIREBASE_DATABASE_URL not set – Realtime Database features disabled');
+    }
 
     console.log('✓ Firebase Admin initialized successfully');
     console.log('✓ Project ID:', process.env.FIREBASE_PROJECT_ID);
