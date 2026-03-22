@@ -15,11 +15,33 @@ function getRtdb() {
 }
 
 /**
+ * Builds the formatted card text string that is physically stored on the
+ * RFID card.  The ESP32 reads this text from the card and compares it
+ * against the `cardText` field stored in the Realtime Database.
+ *
+ * Format: "Name: <name> | ID: <userId> | Role: <role>"
+ *
+ * @param {string} userId
+ * @param {object} userData
+ * @returns {string}
+ */
+export function buildCardText(userId, userData) {
+  return `Name: ${userData.name || ''} | ID: ${userId} | Role: ${userData.role || ''}`;
+}
+
+/**
  * Syncs a single user to the Realtime Database `rfid_cards` node so that
  * the ESP32 can verify cards without going through Vercel.
  *
- * The key used in rfid_cards is the user's rfidCardId if set, otherwise
- * the userId (backward-compatible with cards that store the employee ID).
+ * Each entry stores:
+ *   - cardText  – the full formatted string printed on / stored in the card
+ *                 ("Name: X | ID: Y | Role: Z") so the ESP can do an exact
+ *                 match against what it reads from the physical card
+ *   - userId    – Firestore document ID
+ *   - name / role / department / status
+ *
+ * The RTDB key is the user's rfidCardId if explicitly set, otherwise the
+ * userId (backward-compatible with cards whose UID is the employee ID).
  *
  * @param {string} userId  - Firestore document ID (e.g. "DGEN-EX-01001")
  * @param {object} userData - User data object from Firestore
@@ -34,7 +56,8 @@ export async function syncUserToRtdb(userId, userData) {
     name: userData.name || '',
     role: userData.role || '',
     department: userData.department || '',
-    status: userData.status || 'Active'
+    status: userData.status || 'Active',
+    cardText: buildCardText(userId, userData)
   };
 
   try {
