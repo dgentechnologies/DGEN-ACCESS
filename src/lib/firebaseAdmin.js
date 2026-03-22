@@ -33,11 +33,19 @@ try {
     };
 
     app = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: process.env.FIREBASE_DATABASE_URL
     });
 
     // Firestore database instance
     db = admin.firestore();
+
+    // Log Realtime Database status
+    if (process.env.FIREBASE_DATABASE_URL) {
+      console.log('✓ Realtime Database URL:', process.env.FIREBASE_DATABASE_URL);
+    } else {
+      console.warn('⚠️  FIREBASE_DATABASE_URL not set – Realtime Database features disabled');
+    }
 
     console.log('✓ Firebase Admin initialized successfully');
     console.log('✓ Project ID:', process.env.FIREBASE_PROJECT_ID);
@@ -123,9 +131,33 @@ async function initializeDefaultUsers() {
   }
 }
 
+/**
+ * On every server cold-start (including Vercel deploys), sync all Firestore
+ * users into the Realtime Database so the ESP32 always has an up-to-date
+ * card list even if the RTDB was empty (e.g. after first deploy).
+ */
+async function syncAllUsersToRtdb() {
+  if (!db || !process.env.FIREBASE_DATABASE_URL) return;
+
+  try {
+    // Dynamic import avoids a circular-dependency issue at module load time
+    const { syncUserToRtdb } = await import('./realtimeDb.js');
+    const snapshot = await db.collection('users').get();
+
+    await Promise.all(snapshot.docs.map(doc => syncUserToRtdb(doc.id, doc.data())));
+
+    if (snapshot.size > 0) {
+      console.log(`✓ Synced ${snapshot.size} user(s) to Realtime Database on startup`);
+    }
+  } catch (error) {
+    console.error('Error syncing users to Realtime Database on startup:', error.message);
+  }
+}
+
 // Initialize users (will run once)
 if (typeof window === 'undefined') {
   initializeDefaultUsers();
+  syncAllUsersToRtdb();
 }
 
 export { admin, db };

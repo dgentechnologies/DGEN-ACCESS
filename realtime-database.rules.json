@@ -1,0 +1,36 @@
+{
+  "rules": {
+    "rfid_cards": {
+      ".read": true,
+      ".write": false,
+      "$cardId": {
+        ".validate": "newData.hasChildren(['userId','name','role','status'])"
+      }
+    },
+    "active_sessions": {
+      ".read": true,
+      ".write": true,
+      "$userId": {
+        ".validate": "newData.hasChildren(['cardId','name','checkedInAt','status'])"
+      }
+    },
+    "access_logs": {
+      ".read": false,
+      ".write": true,
+      "$logId": {
+        ".validate": "newData.hasChildren(['cardId','userId','name','status','timestamp'])"
+      }
+    },
+    "remote_unlock": {
+      "requested": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.isBoolean()"
+      }
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

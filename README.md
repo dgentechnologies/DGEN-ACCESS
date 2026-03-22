@@ -198,73 +198,48 @@ Quick start:
 
 ## 📝 ESP32 Integration
 
-### Arduino Example
-```cpp
-#include <WiFi.h>
-#include <HTTPClient.h>
+The complete, ready-to-flash Arduino sketch lives in **[`esp32/rfid_access_control.ino`](esp32/rfid_access_control.ino)**.
 
-const char* serverUrl = "https://dgen-access-control.vercel.app/verify";
+### Card text format
 
-void checkAccess(String rfidData) {
-  HTTPClient http;
-  http.begin(serverUrl);
-  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  
-  String payload = "data=" + rfidData;
-  int httpCode = http.POST(payload);
-  
-  if (httpCode == 200) {
-    String response = http.getString();
-    if (response == "YES") {
-      // Grant access - open door, green LED, etc.
-      Serial.println("Access Granted!");
-    } else {
-      // Deny access - red LED, buzzer, etc.
-      Serial.println("Access Denied!");
-    }
-  }
-  http.end();
-}
+Every physical RFID card is programmed with a single NDEF text record in this exact format:
+
+```
+Name: Tirthankar Dasgupta | ID: DGEN-EX-01001 | Role: CEO & CTO
 ```
 
-### ESP8266 Remote Unlock Polling
-```cpp
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
+The employee ID (`DGEN-EX-01001`) is the same key used in the Realtime Database and Firestore.
 
-const char* pollUrl = "https://dgen-access-control.vercel.app/poll";
+### Verification flow (no Vercel / no cold-start delay)
 
-void setup() {
-  Serial.begin(115200);
-  // WiFi connection setup here
-}
-
-void loop() {
-  HTTPClient http;
-  WiFiClient client;
-  
-  http.begin(client, pollUrl);
-  int httpCode = http.GET();
-  
-  if (httpCode > 0) {
-    String payload = http.getString();
-    
-    if (payload == "OPEN") {
-      triggerUnlock(); // Hardware action to unlock door
-      Serial.println("Remote unlock triggered!");
-    }
-    // else payload == "WAIT", do nothing
-  }
-  
-  http.end();
-  delay(3000); // Poll every 3 seconds
-}
-
-void triggerUnlock() {
-  // Your hardware unlock logic here
-  // e.g., activate relay, servo, etc.
-}
 ```
+1. ESP32 reads card  →  extracts full text string
+2. Parse "ID: <value> |"  →  cardId = "DGEN-EX-01001"
+3. GET  https://<RTDB>/rfid_cards/<cardId>.json
+        ↳ returns { cardText, status, name, role, department, userId }
+4. Compare returned cardText == what was read  →  reject if different (tampered card)
+5. Check status == "Active"  →  deny if "Banned"
+6. Actuate relay / green LED (grant) or red LED (deny)
+7. POST https://<RTDB>/access_logs.json
+        ↳ { cardId, userId, name, status:"Granted"|"Denied", timestamp, synced:false }
+8. POST https://<vercel>/api/esp/log  (background, non-blocking)
+        ↳ Vercel flushes unsynced RTDB logs → Firestore → dashboard updates
+```
+
+### Required Arduino libraries
+
+Install these from the Arduino Library Manager:
+- **ArduinoJson** by Benoit Blanchon (v6 or v7)
+- **MFRC522** by GithubCommunity
+
+The `WiFi` and `HTTPClient` libraries are bundled with the ESP32 Arduino core.
+
+### Quick start
+
+1. Open `esp32/rfid_access_control.ino` in the Arduino IDE.
+2. Set `WIFI_SSID`, `WIFI_PASSWORD`, `RTDB_BASE_URL`, and `VERCEL_LOG_URL`.
+3. Wire the MFRC522 to the ESP32 via SPI (SS=5, RST=22) and connect relay/LEDs.
+4. Flash and open the serial monitor at 115200 baud.
 
 ## 🔐 Security Notes
 

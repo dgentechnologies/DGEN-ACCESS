@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebaseAdmin';
+import { syncUserToRtdb, removeUserFromRtdb } from '@/lib/realtimeDb';
 
 export async function GET(request, context) {
   try {
@@ -40,6 +41,7 @@ export async function GET(request, context) {
         isAdmin: userData.isAdmin || false,
         isSuperAdmin: userData.isSuperAdmin || false,
         requireLocationCheck: userData.requireLocationCheck || false,
+        rfidCardId: userData.rfidCardId || '',
       },
     });
   } catch (error) {
@@ -67,7 +69,7 @@ export async function PUT(request, context) {
     const params = await context.params;
     const userId = params.id;
     const body = await request.json();
-    const { name, role, email, mobile, dob, address, emergencyContact, isAdmin, requireLocationCheck } = body;
+    const { name, role, email, mobile, dob, address, emergencyContact, isAdmin, requireLocationCheck, rfidCardId } = body;
 
     const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
@@ -119,8 +121,13 @@ export async function PUT(request, context) {
     // Consider adding server-side session validation for production
     if (isAdmin !== undefined) updates.isAdmin = isAdmin === true;
     if (requireLocationCheck !== undefined) updates.requireLocationCheck = requireLocationCheck === true;
+    if (rfidCardId !== undefined) updates.rfidCardId = rfidCardId ? rfidCardId.trim() : '';
 
     await userRef.update(updates);
+
+    // Keep Realtime Database in sync so ESP32 always has the latest data
+    const mergedUser = { ...userDoc.data(), ...updates };
+    await syncUserToRtdb(userId, mergedUser);
 
     return NextResponse.json({
       success: true,
@@ -183,6 +190,9 @@ export async function DELETE(request, context) {
     }
 
     await userRef.delete();
+
+    // Remove card entry from Realtime Database
+    await removeUserFromRtdb(userId, userData.rfidCardId);
 
     return NextResponse.json({
       success: true,

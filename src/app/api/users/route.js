@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebaseAdmin';
+import { syncUserToRtdb } from '@/lib/realtimeDb';
 
 export async function GET(request) {
   try {
@@ -52,7 +53,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { id, name, role, department, isAdmin, email, mobile, dob, address, emergencyContact } = body;
+    const { id, name, role, department, isAdmin, email, mobile, dob, address, emergencyContact, rfidCardId } = body;
 
     // Validation
     if (!id || !name || !role) {
@@ -119,8 +120,12 @@ export async function POST(request) {
     if (dob) newUser.dob = dob;
     if (address) newUser.address = address.trim();
     if (emergencyContact) newUser.emergencyContact = emergencyContact.trim();
+    if (rfidCardId) newUser.rfidCardId = rfidCardId.trim();
 
     await db.collection('users').doc(id).set(newUser);
+
+    // Mirror the new user to Realtime Database for instant ESP32 verification
+    await syncUserToRtdb(id, newUser);
 
     return NextResponse.json({
       success: true,

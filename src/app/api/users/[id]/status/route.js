@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebaseAdmin';
+import { updateRtdbCardStatus } from '@/lib/realtimeDb';
 
 export async function PUT(request, context) {
   try {
@@ -36,6 +37,10 @@ export async function PUT(request, context) {
       status: newStatus,
       updatedAt: new Date().toISOString()
     });
+
+    // Mirror the status change to Realtime Database immediately so the ESP32
+    // picks up the ban/unban without waiting for a full user sync
+    await updateRtdbCardStatus(userId, userData.rfidCardId, newStatus);
 
     return NextResponse.json({
       success: true,
