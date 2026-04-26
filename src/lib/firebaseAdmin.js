@@ -139,8 +139,11 @@ async function initializeDefaultUsers() {
  * On every server cold-start (including Vercel deploys), sync all Firestore
  * users into the Realtime Database so the ESP32 always has an up-to-date
  * card list even if the RTDB was empty (e.g. after first deploy).
+ *
+ * This function is kept for use by the standalone migrate-to-rtdb.js script.
+ * Automatic migration at server startup is handled by src/instrumentation.js.
  */
-async function syncAllUsersToRtdb() {
+export async function syncAllUsersToRtdb() {
   if (!db || !process.env.FIREBASE_ACCESS_DATABASE_URL) return;
 
   try {
@@ -151,17 +154,18 @@ async function syncAllUsersToRtdb() {
     await Promise.all(snapshot.docs.map(doc => syncUserToRtdb(doc.id, doc.data())));
 
     if (snapshot.size > 0) {
-      console.log(`✓ Synced ${snapshot.size} user(s) to Realtime Database on startup`);
+      console.log(`✓ Synced ${snapshot.size} user(s) to Realtime Database`);
     }
   } catch (error) {
-    console.error('Error syncing users to Realtime Database on startup:', error.message);
+    console.error('Error syncing users to Realtime Database:', error.message);
   }
 }
 
-// Initialize users (will run once)
+// Initialize default users on cold start (runs once per server process)
 if (typeof window === 'undefined') {
   initializeDefaultUsers();
-  syncAllUsersToRtdb();
+  // Note: Firestore → RTDB migration is handled by src/instrumentation.js
+  // which is guaranteed to run before any requests are served.
 }
 
 export { admin, db };
