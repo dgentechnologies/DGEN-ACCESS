@@ -1,25 +1,24 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBfsPTPTuL0slzJTabaiuvXs75jj0NWWLg",
-  authDomain: "dgen-access.firebaseapp.com",
-  projectId: "dgen-access",
-  storageBucket: "dgen-access.firebasestorage.app",
-  messagingSenderId: "1039121440447",
-  appId: "1:1039121440447:web:387546d1176a6cbb1f700a",
-  measurementId: "G-LX6GYDQC6E",
-  databaseURL: "https://dgen-access-default-rtdb.firebaseio.com"
+  apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain:        process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId:         process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket:     process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId:             process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize services
+// Named Firestore database ("access"). Falls back to the default database if
+// the env var is not set (useful for local dev without the full config).
+const firestoreDatabaseId = process.env.NEXT_PUBLIC_FIREBASE_ACCESS_DATABASE_ID || '(default)';
+
 export const auth = getAuth(app);
-export const firestoreDb = getFirestore(app);
-export const realtimeDb = getDatabase(app);
+export const firestoreDb = getFirestore(app, firestoreDatabaseId);
 
 export default app;

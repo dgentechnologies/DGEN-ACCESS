@@ -33,10 +33,11 @@ require('dotenv').config({ path: envPath });
 
 // Check required environment variables
 const requiredVars = [
-  'FIREBASE_PROJECT_ID',
-  'FIREBASE_CLIENT_EMAIL',
-  'FIREBASE_PRIVATE_KEY',
-  'FIREBASE_DATABASE_URL'
+  'FIREBASE_ACCESS_PROJECT_ID',
+  'FIREBASE_ACCESS_CLIENT_EMAIL',
+  'FIREBASE_ACCESS_PRIVATE_KEY',
+  'FIREBASE_ACCESS_DATABASE_URL',
+  'FIREBASE_ACCESS_DATABASE_ID'
 ];
 
 let allValid = true;
@@ -49,29 +50,20 @@ requiredVars.forEach(varName => {
   const icon = exists ? '✓' : '❌';
   
   if (exists) {
-    let displayValue = value;
-    
-    // Mask sensitive data for display
-    if (varName === 'FIREBASE_PRIVATE_KEY') {
-      displayValue = value.substring(0, 50) + '...[REDACTED]';
-    } else if (varName === 'FIREBASE_CLIENT_EMAIL') {
-      displayValue = value;
-    }
-    
     console.log(`${icon} ${varName}`);
     
     // Additional validation
-    if (varName === 'FIREBASE_PRIVATE_KEY' && !value.includes('BEGIN PRIVATE KEY')) {
+    if (varName === 'FIREBASE_ACCESS_PRIVATE_KEY' && !value.includes('BEGIN PRIVATE KEY')) {
       console.log(`   ⚠️  Warning: Private key may be malformed`);
       allValid = false;
     }
     
-    if (varName === 'FIREBASE_CLIENT_EMAIL' && !value.includes('@')) {
+    if (varName === 'FIREBASE_ACCESS_CLIENT_EMAIL' && !value.includes('@')) {
       console.log(`   ⚠️  Warning: Client email format looks incorrect`);
       allValid = false;
     }
     
-    if (varName === 'FIREBASE_DATABASE_URL' && !value.startsWith('https://')) {
+    if (varName === 'FIREBASE_ACCESS_DATABASE_URL' && !value.startsWith('https://')) {
       console.log(`   ⚠️  Warning: Database URL should start with https://`);
       allValid = false;
     }

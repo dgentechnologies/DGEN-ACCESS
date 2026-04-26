@@ -59,6 +59,10 @@ const char* FIRMWARE_VERSION = "5.3";
 const unsigned long REMOTE_CHECK_INTERVAL = 5000;   // poll remote_unlock every 5 s
 const unsigned long HEARTBEAT_INTERVAL    = 30000;  // update device online status every 30 s
 
+// ─── Remote trigger identity (written to access_logs for remote unlock events) ─
+const char* REMOTE_TRIGGER_CARD_ID = "REMOTE";
+const char* REMOTE_TRIGGER_USER_ID = "REMOTE";
+
 // ─── Pin definitions ─────────────────────────────────────────────────────────
 #define SS_PIN        5    // MFRC522 SDA/SS
 #define RST_PIN       22   // MFRC522 RST
@@ -322,7 +326,7 @@ void checkRemoteUnlock() {
   grantAccess("Remote Trigger");
 
   // Log the remote unlock event
-  writeAccessLog("REMOTE", "REMOTE", "Remote Trigger", "Granted", "Remote", "");
+  writeAccessLog(REMOTE_TRIGGER_CARD_ID, REMOTE_TRIGGER_USER_ID, "Remote Trigger", "Granted", "Remote", "");
 
   // Reset the flag so it is not re-triggered
   resetRemoteUnlock();

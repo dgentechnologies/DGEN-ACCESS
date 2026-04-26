@@ -1,4 +1,5 @@
 import admin from 'firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 
 let db, app;
 
@@ -8,13 +9,13 @@ try {
   if (!admin.apps.length) {
     // Validate required environment variables
     const requiredEnvVars = {
-      FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
-      FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
-      FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY
+      FIREBASE_ACCESS_PROJECT_ID:    process.env.FIREBASE_ACCESS_PROJECT_ID,
+      FIREBASE_ACCESS_CLIENT_EMAIL:  process.env.FIREBASE_ACCESS_CLIENT_EMAIL,
+      FIREBASE_ACCESS_PRIVATE_KEY:   process.env.FIREBASE_ACCESS_PRIVATE_KEY
     };
 
     const missingVars = Object.entries(requiredEnvVars)
-      .filter(([key, value]) => !value)
+      .filter(([, value]) => !value)
       .map(([key]) => key);
 
     if (missingVars.length > 0) {
@@ -27,31 +28,34 @@ try {
 
     // Use environment variables for service account
     const serviceAccount = {
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+      projectId:   process.env.FIREBASE_ACCESS_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_ACCESS_CLIENT_EMAIL,
+      privateKey:  process.env.FIREBASE_ACCESS_PRIVATE_KEY.replace(/\\n/g, '\n')
     };
 
     app = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: process.env.FIREBASE_DATABASE_URL
+      credential:  admin.credential.cert(serviceAccount),
+      databaseURL: process.env.FIREBASE_ACCESS_DATABASE_URL
     });
 
-    // Firestore database instance
-    db = admin.firestore();
+    // Firestore: use the named database "access" (or default if not configured)
+    const databaseId = process.env.FIREBASE_ACCESS_DATABASE_ID || '(default)';
+    db = getFirestore(app, databaseId);
 
     // Log Realtime Database status
-    if (process.env.FIREBASE_DATABASE_URL) {
-      console.log('✓ Realtime Database URL:', process.env.FIREBASE_DATABASE_URL);
+    if (process.env.FIREBASE_ACCESS_DATABASE_URL) {
+      console.log('✓ Realtime Database URL:', process.env.FIREBASE_ACCESS_DATABASE_URL);
     } else {
-      console.warn('⚠️  FIREBASE_DATABASE_URL not set – Realtime Database features disabled');
+      console.warn('⚠️  FIREBASE_ACCESS_DATABASE_URL not set – Realtime Database features disabled');
     }
 
     console.log('✓ Firebase Admin initialized successfully');
-    console.log('✓ Project ID:', process.env.FIREBASE_PROJECT_ID);
+    console.log('✓ Project ID:', process.env.FIREBASE_ACCESS_PROJECT_ID);
+    console.log('✓ Firestore database:', process.env.FIREBASE_ACCESS_DATABASE_ID || '(default)');
   } else {
     app = admin.app();
-    db = admin.firestore();
+    const databaseId = process.env.FIREBASE_ACCESS_DATABASE_ID || '(default)';
+    db = getFirestore(app, databaseId);
   }
 } catch (error) {
   console.error('\n❌ Firebase Admin initialization error:');
@@ -137,7 +141,7 @@ async function initializeDefaultUsers() {
  * card list even if the RTDB was empty (e.g. after first deploy).
  */
 async function syncAllUsersToRtdb() {
-  if (!db || !process.env.FIREBASE_DATABASE_URL) return;
+  if (!db || !process.env.FIREBASE_ACCESS_DATABASE_URL) return;
 
   try {
     // Dynamic import avoids a circular-dependency issue at module load time

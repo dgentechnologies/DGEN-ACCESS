@@ -40,7 +40,7 @@ export async function PUT(request, context) {
 
     // Mirror the status change to Realtime Database immediately so the ESP32
     // picks up the ban/unban without waiting for a full user sync
-    await updateRtdbCardStatus(userId, userData.rfidCardId, newStatus);
+    await updateRtdbCardStatus(userId, newStatus);
 
     return NextResponse.json({
       success: true,

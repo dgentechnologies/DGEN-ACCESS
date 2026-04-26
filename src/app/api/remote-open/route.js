@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebaseAdmin';
+import { setRtdbRemoteUnlock } from '@/lib/realtimeDb';
 
 const REMOTE_UNLOCK_PATH = { collection: 'settings', doc: 'remoteUnlock' };
 
@@ -77,13 +78,16 @@ export async function POST(request) {
       }
     }
 
-    // Set the unlock flag in Firestore so all instances (including the poll endpoint) can see it
+    // Set the unlock flag in Firestore so the NodeMCU poll endpoint can see it
     if (db) {
       await db.collection(REMOTE_UNLOCK_PATH.collection).doc(REMOTE_UNLOCK_PATH.doc).set(
         { requested: true },
         { merge: true }
       );
     }
+
+    // Set the unlock flag in RTDB so the ESP32 picks it up on its next poll
+    await setRtdbRemoteUnlock(employeeId);
     
     // Log the manual unlock action with employee ID
     const timestamp = new Date().toISOString();
