@@ -21,12 +21,12 @@ export async function POST() {
       );
     }
 
-    if (!process.env.FIREBASE_DATABASE_URL) {
+    if (!process.env.FIREBASE_ACCESS_DATABASE_URL) {
       return NextResponse.json(
         {
           success: false,
           message:
-            'FIREBASE_DATABASE_URL is not configured. ' +
+            'FIREBASE_ACCESS_DATABASE_URL is not configured. ' +
             'Add it to your .env.local file and redeploy.'
         },
         { status: 503 }

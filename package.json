@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "echo \"Tests not implemented yet\" && exit 0",
-    "validate-config": "node scripts/validate-firebase-config.js"
+    "validate-config": "node scripts/validate-firebase-config.js",
+    "migrate-rtdb": "node scripts/migrate-to-rtdb.js"
   },
   "repository": {
     "type": "git",

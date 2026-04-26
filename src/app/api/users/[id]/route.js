@@ -192,7 +192,7 @@ export async function DELETE(request, context) {
     await userRef.delete();
 
     // Remove card entry from Realtime Database
-    await removeUserFromRtdb(userId, userData.rfidCardId);
+    await removeUserFromRtdb(userId);
 
     return NextResponse.json({
       success: true,
