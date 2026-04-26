@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebaseAdmin';
 import { setRtdbRemoteUnlock } from '@/lib/realtimeDb';
 
-const REMOTE_UNLOCK_PATH = { collection: 'settings', doc: 'remoteUnlock' };
-
 /**
  * Calculates the distance in metres between two lat/lon coordinates
  * using the Haversine formula.
@@ -24,7 +22,7 @@ function getDistanceMetres(lat1, lon1, lat2, lon2) {
  * Remote Unlock Trigger Endpoint
  * POST /api/remote-open
  * 
- * Triggered by admin dashboard or employee portal to signal ESP8266 to unlock door.
+ * Triggered by admin dashboard or employee portal to signal ESP32 to unlock door.
  * For employees with requireLocationCheck enabled, the request must include the
  * employee's current coordinates which are validated against the configured office location.
  */
@@ -76,14 +74,6 @@ export async function POST(request) {
           }
         }
       }
-    }
-
-    // Set the unlock flag in Firestore so the NodeMCU poll endpoint can see it
-    if (db) {
-      await db.collection(REMOTE_UNLOCK_PATH.collection).doc(REMOTE_UNLOCK_PATH.doc).set(
-        { requested: true },
-        { merge: true }
-      );
     }
 
     // Set the unlock flag in RTDB so the ESP32 picks it up on its next poll
