@@ -51,8 +51,29 @@ export async function register() {
     if (snapshot.empty) {
       console.log('ℹ️   No users found in Firestore — nothing to migrate to RTDB');
     } else {
-      await Promise.all(snapshot.docs.map(doc => syncUserToRtdb(doc.id, doc.data())));
-      console.log(`✓  User migration complete: ${snapshot.size} user(s) synced to RTDB`);
+      let succeeded = 0;
+      let failed    = 0;
+
+      // Process users sequentially so every failure is logged individually
+      for (const doc of snapshot.docs) {
+        try {
+          await syncUserToRtdb(doc.id, doc.data());
+          console.log(`  ✓  ${doc.id} — ${doc.data().name || '(no name)'}`);
+          succeeded++;
+        } catch (userErr) {
+          console.error(`  ❌  ${doc.id} — ${userErr.message}`);
+          failed++;
+        }
+      }
+
+      if (failed > 0) {
+        console.warn(
+          `⚠️  User migration finished with errors: ${succeeded} synced, ${failed} failed` +
+          ' — check errors above (RTDB URL, network, or database not provisioned?)'
+        );
+      } else {
+        console.log(`✓  User migration complete: ${succeeded} user(s) synced to RTDB`);
+      }
     }
   } catch (error) {
     // Never crash the server on migration failure
@@ -84,8 +105,10 @@ export async function register() {
       // Skip entries that were already synced during the back-fill pass above
       if (log.synced === true) return;
 
-      // Skip malformed entries that lack a numeric timestamp
-      if (typeof log.timestamp !== 'number') return;
+      // Accept timestamp as a number (ESP32 native) or a numeric string
+      let timestamp = log.timestamp;
+      if (typeof timestamp === 'string') timestamp = parseInt(timestamp, 10);
+      if (typeof timestamp !== 'number' || !isFinite(timestamp)) return;
 
       try {
         // Write to Firestore using the RTDB push key as the document ID so
@@ -98,9 +121,9 @@ export async function register() {
           deviceId:  log.deviceId || '',
           method:    log.method   || 'RFID',
           cardUid:   log.cardUid  || '',
-          timestamp: log.timestamp,
+          timestamp,
           // ISO string for convenient dashboard display
-          time:      new Date(log.timestamp * 1000).toISOString(),
+          time:      new Date(timestamp * 1000).toISOString(),
           // Legacy alias kept for any existing dashboard queries
           id:        log.userId || log.cardId || 'Unknown'
         }, { merge: true });

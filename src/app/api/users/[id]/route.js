@@ -125,9 +125,14 @@ export async function PUT(request, context) {
 
     await userRef.update(updates);
 
-    // Keep Realtime Database in sync so ESP32 always has the latest data
+    // Keep Realtime Database in sync so ESP32 always has the latest data.
+    // A failure here is non-fatal — the back-fill on next server start will catch it.
     const mergedUser = { ...userDoc.data(), ...updates };
-    await syncUserToRtdb(userId, mergedUser);
+    try {
+      await syncUserToRtdb(userId, mergedUser);
+    } catch (rtdbErr) {
+      console.error(`⚠️  RTDB sync failed for updated user ${userId}:`, rtdbErr.message);
+    }
 
     return NextResponse.json({
       success: true,

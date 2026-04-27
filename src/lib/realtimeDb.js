@@ -15,6 +15,28 @@ function getRtdb() {
 }
 
 /**
+ * Converts a Firestore Timestamp, ISO date string, Unix-millisecond number,
+ * or Unix-second number to Unix seconds.  Returns `fallback` (defaults to
+ * the current time in seconds) when the value is absent or unparseable.
+ */
+function toUnixSeconds(value, fallback) {
+  const now = fallback ?? Math.floor(Date.now() / 1000);
+  if (!value) return now;
+  if (typeof value === 'number') {
+    // Values above 1e10 (10 billion) are milliseconds — convert them
+    return value > 1e10 ? Math.floor(value / 1000) : value;
+  }
+  if (typeof value === 'string') {
+    const ms = Date.parse(value);
+    return isNaN(ms) ? now : Math.floor(ms / 1000);
+  }
+  // Firestore Timestamp object (Admin SDK)
+  if (typeof value.toMillis === 'function') return Math.floor(value.toMillis() / 1000);
+  if (typeof value.seconds === 'number')    return value.seconds;
+  return now;
+}
+
+/**
  * Builds the formatted card text string that is physically stored on the
  * RFID card.  The ESP32 reads this text from the card and compares it
  * against the `cardText` field stored in the Realtime Database.
@@ -39,25 +61,17 @@ export function buildCardText(userId, userData) {
  *
  * @param {string} userId   - Firestore document ID (e.g. "DGEN-EX-01001")
  * @param {object} userData - User data object from Firestore
+ * @throws {Error} if the Realtime Database is not configured or the write fails
  */
 export async function syncUserToRtdb(userId, userData) {
   const rtdb = getRtdb();
-  if (!rtdb) return;
+  if (!rtdb) {
+    throw new Error(
+      'Realtime Database not available — check FIREBASE_ACCESS_DATABASE_URL'
+    );
+  }
 
   const nowSeconds = Math.floor(Date.now() / 1000);
-
-  // Convert Firestore ISO timestamps to Unix seconds if present
-  const createdAt = userData.createdAt
-    ? (typeof userData.createdAt === 'number'
-        ? userData.createdAt
-        : Math.floor(new Date(userData.createdAt).getTime() / 1000))
-    : nowSeconds;
-
-  const updatedAt = userData.updatedAt
-    ? (typeof userData.updatedAt === 'number'
-        ? userData.updatedAt
-        : Math.floor(new Date(userData.updatedAt).getTime() / 1000))
-    : nowSeconds;
 
   const cardData = {
     userId,
@@ -67,15 +81,12 @@ export async function syncUserToRtdb(userId, userData) {
     status:     userData.status     || 'Active',
     cardText:   buildCardText(userId, userData),
     cardUid:    userData.cardUid    || userData.rfidCardId || '',
-    createdAt,
-    updatedAt
+    createdAt:  toUnixSeconds(userData.createdAt, nowSeconds),
+    updatedAt:  toUnixSeconds(userData.updatedAt, nowSeconds)
   };
 
-  try {
-    await rtdb.ref(`access/rfid_cards/${userId}`).set(cardData);
-  } catch (error) {
-    console.error('Error syncing user to Realtime Database:', error.message);
-  }
+  // Let write errors propagate so callers can log / surface them properly
+  await rtdb.ref(`access/rfid_cards/${userId}`).set(cardData);
 }
 
 /**
@@ -149,7 +160,11 @@ export async function setRtdbRemoteUnlock(triggeredBy) {
  */
 export async function syncRtdbLogsToFirestore(firestoreDb) {
   const rtdb = getRtdb();
-  if (!rtdb || !firestoreDb) return 0;
+  if (!rtdb) {
+    console.warn('⚠️  RTDB not available — log sync skipped');
+    return 0;
+  }
+  if (!firestoreDb) return 0;
 
   try {
     // Fetch all access logs; filter out already-synced ones in JS since RTDB
@@ -158,6 +173,8 @@ export async function syncRtdbLogsToFirestore(firestoreDb) {
 
     if (!snapshot.exists()) return 0;
 
+    // Keys to mark as synced in RTDB after the Firestore batch commits
+    // Format: { "<pushKey>/synced": true } — relative to access/access_logs
     const rtdbUpdates = {};
     const batch = firestoreDb.batch();
     let count = 0;
@@ -168,8 +185,10 @@ export async function syncRtdbLogsToFirestore(firestoreDb) {
       // Skip entries already synced by a previous run
       if (log.synced === true) return;
 
-      // Skip entries without a valid timestamp to avoid misleading records
-      if (typeof log.timestamp !== 'number') return;
+      // Accept timestamp as a number (ESP32 native) or a numeric string
+      let timestamp = log.timestamp;
+      if (typeof timestamp === 'string') timestamp = parseInt(timestamp, 10);
+      if (typeof timestamp !== 'number' || !isFinite(timestamp)) return;
 
       // Use the RTDB push key as the Firestore document ID to ensure
       // idempotency — re-running the sync never creates duplicate docs.
@@ -182,20 +201,22 @@ export async function syncRtdbLogsToFirestore(firestoreDb) {
         deviceId:  log.deviceId || '',
         method:    log.method   || 'RFID',
         cardUid:   log.cardUid  || '',
-        timestamp: log.timestamp,
+        timestamp,
         // ISO string for dashboard display (timestamp is Unix seconds from ESP32)
-        time:      new Date(log.timestamp * 1000).toISOString(),
+        time:      new Date(timestamp * 1000).toISOString(),
         // Keep legacy `id` alias so existing dashboard queries still work
         id: log.userId || log.cardId || 'Unknown'
       }, { merge: true });
 
-      rtdbUpdates[`access/access_logs/${child.key}/synced`] = true;
+      // Relative to access/access_logs — cleaner than root-level multi-path update
+      rtdbUpdates[`${child.key}/synced`] = true;
       count++;
     });
 
     if (count > 0) {
+      // Write to Firestore first; only mark as synced in RTDB on success
       await batch.commit();
-      await rtdb.ref('/').update(rtdbUpdates);
+      await rtdb.ref('access/access_logs').update(rtdbUpdates);
     }
 
     return count;

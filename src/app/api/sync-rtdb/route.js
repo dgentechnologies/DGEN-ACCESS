@@ -36,18 +36,28 @@ export async function POST() {
     // Sync all Firestore users → Realtime Database rfid_cards
     const snapshot = await db.collection('users').get();
     let usersSynced = 0;
+    let usersFailed = 0;
 
     for (const doc of snapshot.docs) {
-      await syncUserToRtdb(doc.id, doc.data());
-      usersSynced++;
+      try {
+        await syncUserToRtdb(doc.id, doc.data());
+        usersSynced++;
+      } catch (err) {
+        console.error(`⚠️  Failed to sync user ${doc.id} to RTDB:`, err.message);
+        usersFailed++;
+      }
     }
 
     // Flush any ESP32-written access logs from RTDB → Firestore
     const logsSynced = await syncRtdbLogsToFirestore(db);
 
+    const userMsg = usersFailed > 0
+      ? `${usersSynced} user(s) synced to RTDB, ${usersFailed} failed (check server logs)`
+      : `${usersSynced} user(s) synced to RTDB`;
+
     return NextResponse.json({
-      success: true,
-      message: `Synced ${usersSynced} user(s) to Realtime Database and ${logsSynced} pending log(s) to Firestore`
+      success: usersFailed === 0,
+      message: `${userMsg} and ${logsSynced} pending log(s) to Firestore`
     });
   } catch (error) {
     console.error('Error in sync-rtdb:', error);

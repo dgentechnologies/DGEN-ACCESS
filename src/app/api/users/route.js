@@ -124,8 +124,13 @@ export async function POST(request) {
 
     await db.collection('users').doc(id).set(newUser);
 
-    // Mirror the new user to Realtime Database for instant ESP32 verification
-    await syncUserToRtdb(id, newUser);
+    // Mirror the new user to Realtime Database for instant ESP32 verification.
+    // A failure here is non-fatal — the back-fill on next server start will catch it.
+    try {
+      await syncUserToRtdb(id, newUser);
+    } catch (rtdbErr) {
+      console.error(`⚠️  RTDB sync failed for new user ${id}:`, rtdbErr.message);
+    }
 
     return NextResponse.json({
       success: true,
