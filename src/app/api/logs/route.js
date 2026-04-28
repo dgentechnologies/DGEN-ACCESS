@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebaseAdmin';
+import { syncRtdbLogsToFirestore } from '@/lib/realtimeDb';
 
 export async function GET(request) {
   try {
@@ -12,6 +13,10 @@ export async function GET(request) {
         { status: 503 }
       );
     }
+
+    // Pull any unsynced RTDB access_logs into Firestore before reading so
+    // the response always reflects the latest entries written by the ESP32.
+    await syncRtdbLogsToFirestore(db);
 
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '100');

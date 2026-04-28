@@ -50,12 +50,6 @@ const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 // Replace with your project's RTDB URL (no trailing slash)
 const char* RTDB_BASE_URL = "https://YOUR_PROJECT-default-rtdb.firebaseio.com";
 
-// ─── Vercel / Next.js server URL ─────────────────────────────────────────────
-// Replace with your deployed app URL.  The ESP32 POSTs to this endpoint after
-// every access log write so the server immediately syncs the new RTDB entry
-// into Firestore and the dashboard updates in real time.
-const char* SERVER_NOTIFY_URL = "https://YOUR_APP.vercel.app/api/esp/log";
-
 // ─── Device identity ─────────────────────────────────────────────────────────
 const char* DEVICE_ID       = "DGEN-ENTRY-01";   // unique device identifier
 const char* DEVICE_NAME     = "Main Entrance";    // human-readable name
@@ -266,33 +260,6 @@ void writeAccessLog(const String& cardId,
     Serial.println("Access log written to RTDB");
   } else {
     Serial.println("RTDB log write failed, HTTP " + String(code));
-  }
-  http.end();
-}
-
-/**
- * Notify the Vercel server that a new access log entry has been written to RTDB.
- * The server will sync all unsynced RTDB access_logs entries into Firestore so
- * the dashboard updates immediately without waiting for the next cold-start.
- *
- * This is a fire-and-forget call — failures are logged but do not block the
- * door control flow.  Logs written when the server is unreachable will be
- * back-filled automatically on the next server cold-start or when the Logs
- * page is opened.
- */
-void notifyServer() {
-  if (WiFi.status() != WL_CONNECTED) return;
-
-  HTTPClient http;
-  http.begin(SERVER_NOTIFY_URL);
-  http.addHeader("Content-Type", "application/json");
-  http.setTimeout(5000);
-
-  int code = http.POST("");
-  if (code == 200) {
-    Serial.println("Server notified — RTDB log synced to Firestore");
-  } else {
-    Serial.println("Server notify failed (HTTP " + String(code) + ") — log will sync on next startup");
   }
   http.end();
 }
