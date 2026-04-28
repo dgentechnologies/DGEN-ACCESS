@@ -38,8 +38,14 @@ try {
       databaseURL: process.env.FIREBASE_ACCESS_DATABASE_URL
     });
 
-    // Firestore: use the named database "access" (or default if not configured)
-    const databaseId = process.env.FIREBASE_ACCESS_DATABASE_ID || '(default)';
+    // Firestore: use the named database from env (required — must not be '(default)')
+    const databaseId = process.env.FIREBASE_ACCESS_DATABASE_ID;
+    if (!databaseId) {
+      throw new Error(
+        'FIREBASE_ACCESS_DATABASE_ID is not set. ' +
+        'Add it to your .env.local file (e.g. FIREBASE_ACCESS_DATABASE_ID=access).'
+      );
+    }
     db = getFirestore(app, databaseId);
 
     // Log Realtime Database status
@@ -51,10 +57,16 @@ try {
 
     console.log('✓ Firebase Admin initialized successfully');
     console.log('✓ Project ID:', process.env.FIREBASE_ACCESS_PROJECT_ID);
-    console.log('✓ Firestore database:', process.env.FIREBASE_ACCESS_DATABASE_ID || '(default)');
+    console.log('✓ Firestore database:', databaseId);
   } else {
     app = admin.app();
-    const databaseId = process.env.FIREBASE_ACCESS_DATABASE_ID || '(default)';
+    const databaseId = process.env.FIREBASE_ACCESS_DATABASE_ID;
+    if (!databaseId) {
+      throw new Error(
+        'FIREBASE_ACCESS_DATABASE_ID is not set. ' +
+        'Add it to your .env.local file (e.g. FIREBASE_ACCESS_DATABASE_ID=access).'
+      );
+    }
     db = getFirestore(app, databaseId);
   }
 } catch (error) {

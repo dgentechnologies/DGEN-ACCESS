@@ -35,13 +35,18 @@ export default function Logs() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    // Trigger RTDB → Firestore sync so the onSnapshot listener below sees the
-    // latest access log entries written by the ESP32 (which writes directly to
-    // RTDB without notifying the server).  The call is fire-and-forget; any
-    // newly synced Firestore docs will arrive via the live listener automatically.
-    fetch('/api/esp/log', { method: 'POST' }).catch((err) => {
-      console.warn('RTDB log sync on mount failed:', err);
-    });
+    // Always load logs from the API on mount so data is shown even when the
+    // Firestore real-time listener is connected to a different database or
+    // otherwise returns an empty snapshot without an error.
+    fetchLogs();
+
+    // Trigger RTDB → Firestore sync so any new ESP32 logs are flushed into
+    // Firestore, then re-fetch to display them immediately.
+    fetch('/api/esp/log', { method: 'POST' })
+      .then(() => fetchLogs())
+      .catch((err) => {
+        console.warn('RTDB log sync on mount failed:', err);
+      });
 
     const unsubscribe = setupRealtimeListener();
     return () => {
@@ -92,6 +97,8 @@ export default function Logs() {
     } catch (error) {
       console.error('Error fetching logs:', error);
       toast.error('Failed to load logs');
+    } finally {
+      setLoading(false);
     }
   };
 
