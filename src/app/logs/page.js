@@ -62,6 +62,16 @@ export default function Logs() {
       const q = query(logsRef, orderBy('timestamp', 'desc'), limit(MAX_LOGS));
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+          // An empty snapshot can fire from the local Firestore cache on first
+          // load before the server round-trip completes.  If we blindly call
+          // setLogs([]) here we wipe any data that fetchLogs() already loaded
+          // from the API.  Instead, fall back to the API which always reads
+          // from the correct named database via the Admin SDK.
+          setLoading(false);
+          fetchLogs();
+          return;
+        }
         const logsArray = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),

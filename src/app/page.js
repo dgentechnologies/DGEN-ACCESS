@@ -103,6 +103,11 @@ export default function Home() {
       const q = query(logsRef, orderBy('timestamp', 'desc'), limit(100));
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+          // Empty cache hit on first load — don't wipe API-loaded stats.
+          fetchLogsForDashboard();
+          return;
+        }
         const logsArray = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
