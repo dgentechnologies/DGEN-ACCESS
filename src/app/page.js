@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { userService } from '@/services/dataService';
+import { userService, logService } from '@/services/dataService';
 import { firestoreDb } from '@/lib/firebase';
 import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import { motion } from 'framer-motion';
@@ -41,6 +41,9 @@ export default function Home() {
     const unsubscribeUsers = setupRealtimeListener();
     const unsubscribeLogs = setupLogsListener();
     checkESP32Status();
+    // Always fetch logs via API on mount so dashboard stats are populated even
+    // when the Firestore real-time listener returns empty without an error.
+    fetchLogsForDashboard();
     
     // Check ESP32 status every 30 seconds
     const esp32Interval = setInterval(checkESP32Status, 30000);
@@ -100,6 +103,11 @@ export default function Home() {
       const q = query(logsRef, orderBy('timestamp', 'desc'), limit(100));
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+          // Empty cache hit on first load — don't wipe API-loaded stats.
+          fetchLogsForDashboard();
+          return;
+        }
         const logsArray = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -138,6 +146,7 @@ export default function Home() {
         setUserAccessStats(sortedUserStats);
       }, (error) => {
         console.error('Logs listener error:', error);
+        fetchLogsForDashboard();
       });
 
       return () => unsubscribe();
@@ -186,6 +195,33 @@ export default function Home() {
     } catch (error) {
       console.error('Error fetching stats:', error);
       toast.error('Failed to load dashboard statistics');
+    }
+  };
+
+  const fetchLogsForDashboard = async () => {
+    try {
+      const response = await logService.getAll(100);
+      if (response.success) {
+        const logsArray = response.data;
+        setLogs(logsArray);
+        const granted = logsArray.filter(l => l.status === 'Granted').length;
+        const denied = logsArray.filter(l => l.status === 'Denied').length;
+        const manualUnlock = logsArray.filter(l => l.status === 'Manual Unlock').length;
+        setAccessStats({ granted, denied, manualUnlock, total: logsArray.length });
+        const userStats = {};
+        logsArray.forEach(log => {
+          if (log.status === 'Granted' || log.status === 'Manual Unlock') {
+            const userName = log.name || 'Unknown';
+            if (!userStats[userName]) {
+              userStats[userName] = { name: userName, count: 0, id: log.id };
+            }
+            userStats[userName].count++;
+          }
+        });
+        setUserAccessStats(Object.values(userStats).sort((a, b) => b.count - a.count).slice(0, 5));
+      }
+    } catch (error) {
+      console.error('Error fetching logs for dashboard:', error);
     }
   };
 

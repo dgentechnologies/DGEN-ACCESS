@@ -14,9 +14,18 @@ const firebaseConfig = {
 // Next.js HMR or when the module is evaluated more than once).
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Named Firestore database ("access"). Falls back to the default database if
-// the env var is not set (useful for local dev without the full config).
-const firestoreDatabaseId = process.env.NEXT_PUBLIC_FIREBASE_ACCESS_DATABASE_ID || '(default)';
+// Named Firestore database ID must be provided via the env var.
+// Silently falling back to '(default)' would connect the client to the wrong
+// database while the server writes to the named database, causing logs and
+// other data to appear missing in the UI.
+const firestoreDatabaseId = process.env.NEXT_PUBLIC_FIREBASE_ACCESS_DATABASE_ID;
+
+if (!firestoreDatabaseId) {
+  throw new Error(
+    'NEXT_PUBLIC_FIREBASE_ACCESS_DATABASE_ID is not set. ' +
+    'Add it to your .env.local file (e.g. NEXT_PUBLIC_FIREBASE_ACCESS_DATABASE_ID=access).'
+  );
+}
 
 export const firestoreDb = getFirestore(app, firestoreDatabaseId);
 

@@ -35,13 +35,18 @@ export default function Logs() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    // Trigger RTDB → Firestore sync so the onSnapshot listener below sees the
-    // latest access log entries written by the ESP32 (which writes directly to
-    // RTDB without notifying the server).  The call is fire-and-forget; any
-    // newly synced Firestore docs will arrive via the live listener automatically.
-    fetch('/api/esp/log', { method: 'POST' }).catch((err) => {
-      console.warn('RTDB log sync on mount failed:', err);
-    });
+    // Always load logs from the API on mount so data is shown even when the
+    // Firestore real-time listener is connected to a different database or
+    // otherwise returns an empty snapshot without an error.
+    fetchLogs();
+
+    // Trigger RTDB → Firestore sync so any new ESP32 logs are flushed into
+    // Firestore, then re-fetch to display them immediately.
+    fetch('/api/esp/log', { method: 'POST' })
+      .then(() => fetchLogs())
+      .catch((err) => {
+        console.warn('RTDB log sync on mount failed:', err);
+      });
 
     const unsubscribe = setupRealtimeListener();
     return () => {
@@ -57,6 +62,16 @@ export default function Logs() {
       const q = query(logsRef, orderBy('timestamp', 'desc'), limit(MAX_LOGS));
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+          // An empty snapshot can fire from the local Firestore cache on first
+          // load before the server round-trip completes.  If we blindly call
+          // setLogs([]) here we wipe any data that fetchLogs() already loaded
+          // from the API.  Instead, fall back to the API which always reads
+          // from the correct named database via the Admin SDK.
+          setLoading(false);
+          fetchLogs();
+          return;
+        }
         const logsArray = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -92,6 +107,8 @@ export default function Logs() {
     } catch (error) {
       console.error('Error fetching logs:', error);
       toast.error('Failed to load logs');
+    } finally {
+      setLoading(false);
     }
   };
 
